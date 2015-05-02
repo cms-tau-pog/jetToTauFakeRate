@@ -1,0 +1,24 @@
+<use name="lhapdf"/>
+<use name="roottmva"/>
+<use name="roofit"/>
+<use name="roostats"/>
+<use name="PhysicsTools/FWLite"/>
+<use name="TauAnalysis/JetToTauFakeRate"/>
+<use name="TauAnalysis/SVfitStandalone"/>
+<use name="RecoJets/JetProducers"/>
+
+<environment>
+<!-- Common tools and examples -->
+  <bin name="extractLumiJSON"             file="extractLumiJSON.cc"></bin>
+  <bin name="jsonTools"                   file="jsonTools.cc"></bin>
+  <bin name="computeLimit"                file="computeLimit.cc"></bin>
+
+<!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
+  <bin name="runFixedPlotter"             file="runFixedPlotter.cc"></bin> 
+
+  <bin name="runTauFakesStudy"            file="runTauFakesStudy.cc"></bin>
+  <bin name="runDataComparison"           file="runDataComparison.cc"></bin>
+
+</environment>
+
+<flags CXXFLAGS="-g -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable  -Os"/>
