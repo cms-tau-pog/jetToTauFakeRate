@@ -348,66 +348,67 @@ int main (int argc, char *argv[])
       rhoHandle.getByLabel (ev, "fixedGridRhoFastjetAll");
       if (rhoHandle.isValid() ) rho = *rhoHandle;
 
-      reco::GenParticleCollection gen;
-      fwlite::Handle < reco::GenParticleCollection > genHandle;
-      genHandle.getByLabel (ev, "prunedGenParticles");
-      if (genHandle.isValid() ) gen = *genHandle;
-
-      // Save time and don't load the rest of the objects when selecting by mctruthmode :)
-      bool hasTop(false);
-      int
-        ngenLeptonsStatus3(0),
-        ngenTausStatus3(0),
-        ngenQuarksStatus3(0);
-      //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
-      //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
-      if(isMC)
-        {
-          //if(iev != 500) continue;
-          for(size_t igen=0; igen<gen.size(); igen++){
-            // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
-            
-            //cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-            //if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
-
-            
-            int absid=abs(gen[igen].pdgId());
-            if(absid==6 /*&& gen[igen].isHardProcess()*/){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
-              hasTop=true;
-              //if(isTTbarMC){
-              //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
-              //  else                        tbarPt=gen[igen].pt();
-              //}
-            }
-
-            //if(!gen[igen].isPromptFinalState() ) continue;
-
-            if(absid==11 || absid==13) ngenLeptonsStatus3++;
-            if(absid==15             ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
-            if(absid<=5              ) ngenQuarksStatus3++;
-          }
-          
-          // Dileptons:
-          //    ttbar dileptons --> 1
-          //    ttbar other     --> 2
-          if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
-          if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
-          // FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
-          //if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-          //if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-          //if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-
-          // lepton-tau:
-          //    ttbar ltau      --> 3
-          //    ttbar dileptons --> 4
-          //    ttbar ljets     --> 5
-          //    ttbar hadrons   --> 6
-          if(mctruthmode==3 && (ngenLeptonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue;
-          if(mctruthmode==4 && (ngenLeptonsStatus3!=2                        || !hasTop )) continue;
-          if(mctruthmode==5 && (ngenLeptonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
-          if(mctruthmode==6 && (ngenLeptonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
-
-        }
+      /////// No gen particles are needed. Consider removing the commented part at all
+      // no genparticles needed // reco::GenParticleCollection gen;
+      // no genparticles needed // fwlite::Handle < reco::GenParticleCollection > genHandle;
+      // no genparticles needed // genHandle.getByLabel (ev, "prunedGenParticles");
+      // no genparticles needed // if (genHandle.isValid() ) gen = *genHandle;
+      // no genparticles needed // 
+      // no genparticles needed // // Save time and don't load the rest of the objects when selecting by mctruthmode :)
+      // no genparticles needed // bool hasTop(false);
+      // no genparticles needed // int
+      // no genparticles needed //   ngenLeptonsStatus3(0),
+      // no genparticles needed //   ngenTausStatus3(0),
+      // no genparticles needed //   ngenQuarksStatus3(0);
+      // no genparticles needed // //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
+      // no genparticles needed // //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+      // no genparticles needed // if(isMC)
+      // no genparticles needed //   {
+      // no genparticles needed //     //if(iev != 500) continue;
+      // no genparticles needed //     for(size_t igen=0; igen<gen.size(); igen++){
+      // no genparticles needed //       // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
+      // no genparticles needed //       
+      // no genparticles needed //       //cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+      // no genparticles needed //       //if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
+      // no genparticles needed // 
+      // no genparticles needed //       
+      // no genparticles needed //       int absid=abs(gen[igen].pdgId());
+      // no genparticles needed //       if(absid==6 /*&& gen[igen].isHardProcess()*/){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
+      // no genparticles needed //         hasTop=true;
+      // no genparticles needed //         //if(isTTbarMC){
+      // no genparticles needed //         //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
+      // no genparticles needed //         //  else                        tbarPt=gen[igen].pt();
+      // no genparticles needed //         //}
+      // no genparticles needed //       }
+      // no genparticles needed // 
+      // no genparticles needed //       //if(!gen[igen].isPromptFinalState() ) continue;
+      // no genparticles needed // 
+      // no genparticles needed //       if(absid==11 || absid==13) ngenLeptonsStatus3++;
+      // no genparticles needed //       if(absid==15             ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
+      // no genparticles needed //       if(absid<=5              ) ngenQuarksStatus3++;
+      // no genparticles needed //     }
+      // no genparticles needed //     
+      // no genparticles needed //     // Dileptons:
+      // no genparticles needed //     //    ttbar dileptons --> 1
+      // no genparticles needed //     //    ttbar other     --> 2
+      // no genparticles needed //     if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
+      // no genparticles needed //     if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
+      // no genparticles needed //     // FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
+      // no genparticles needed //     //if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+      // no genparticles needed //     //if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+      // no genparticles needed //     //if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
+      // no genparticles needed // 
+      // no genparticles needed //     // lepton-tau:
+      // no genparticles needed //     //    ttbar ltau      --> 3
+      // no genparticles needed //     //    ttbar dileptons --> 4
+      // no genparticles needed //     //    ttbar ljets     --> 5
+      // no genparticles needed //     //    ttbar hadrons   --> 6
+      // no genparticles needed //     if(mctruthmode==3 && (ngenLeptonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue;
+      // no genparticles needed //     if(mctruthmode==4 && (ngenLeptonsStatus3!=2                        || !hasTop )) continue;
+      // no genparticles needed //     if(mctruthmode==5 && (ngenLeptonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
+      // no genparticles needed //     if(mctruthmode==6 && (ngenLeptonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
+      // no genparticles needed // 
+      // no genparticles needed //   }
       mon.fillHisto("initNorm", tags, 2., 1.);
 
       //      if(tPt>0 && tbarPt>0 && topPtWgt)
@@ -417,10 +418,6 @@ int main (int argc, char *argv[])
       //          wgtTopPtUp /= wgtTopPt;
       //          wgtTopPtDown /= wgtTopPt;
       //        }
-      
-
-
-
 
       pat::MuonCollection muons;
       fwlite::Handle < pat::MuonCollection > muonsHandle;
@@ -437,10 +434,12 @@ int main (int argc, char *argv[])
       jetsHandle.getByLabel (ev, "slimmedJets");
       if (jetsHandle.isValid() ) jets = *jetsHandle;
 
-      pat::PhotonCollection photons;
-      fwlite::Handle < pat::PhotonCollection > photonsHandle;
-      photonsHandle.getByLabel (ev, "slimmedPhotons");
-      if (photonsHandle.isValid() ) photons = *photonsHandle;
+      /*
+        pat::PhotonCollection photons;
+        fwlite::Handle < pat::PhotonCollection > photonsHandle;
+        photonsHandle.getByLabel (ev, "slimmedPhotons");
+        if (photonsHandle.isValid() ) photons = *photonsHandle;
+      */
 
       pat::METCollection mets;
       fwlite::Handle < pat::METCollection > metsHandle;
@@ -763,7 +762,7 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-          if(icat!="step5") continue; // Only for final selection step, for a quick test
+          if(icat!="step3") continue; // Only for final selection step, for a quick test
           
           // Fake rate: 
           // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
