@@ -716,7 +716,7 @@ int main (int argc, char *argv[])
                   theTau=*tau;
                 }
               if(minDRtj>0.4) continue;
-              if(theTau.pt()>20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
+              if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
               mon.fillHisto(icat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
               mon.fillHisto(icat+"eta_numerator",      tags, jet->eta(), weight);
               mon.fillHisto(icat+"radius_numerator",   tags, jetWidth  , weight);
@@ -793,7 +793,7 @@ int main (int argc, char *argv[])
                   theTau=*tau;
                 }
               if(minDRtj>0.4) continue;
-              if(theTau.pt()>20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
+              if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
               mon.fillHisto(icat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
               mon.fillHisto(icat+"eta_numerator",      tags, jet->eta(), weight);
               mon.fillHisto(icat+"radius_numerator",   tags, jetWidth  , weight);
