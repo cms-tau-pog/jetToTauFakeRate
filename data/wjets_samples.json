@@ -1,0 +1,42 @@
+{
+  "proc":[
+    {   
+      "tag":"W,multijets",
+      "isdata":false,
+      "color":809,
+      "lcolor":1,
+      "destination":"wjets selection",
+      "data":[
+        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+      "tag":"QCDMuEnriched",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "destination":"wjets selection",
+      "comment":"this seems the one matching better the one from TAU-14-001. Not sure of why pion kaon decays are explicitly mentioned, though",
+      "frommcm":"cross section 866600000, filter efficiency 0.00044",
+      "data":[        
+            { "dtag":"MC13TeV_QCDMuEnriched", "split":110, "xsec":381304, "br":[ 1.0 ] , "dset":"/QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v3/MINIAODSIM"}
+            ]             
+    },          
+    {            
+      "tag":"t#bar{t}",
+      "isdata":false,
+      "color":614,
+      "lcolor":1,
+      "destination":"wjets and qcd selection",
+      "comment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "othercomment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    }       
+  ]
+}
+
+
+
+
