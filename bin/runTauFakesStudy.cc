@@ -200,111 +200,27 @@ int main (int argc, char *argv[])
     {
       TString icat (controlCats[k]);
 
-      //pu control to be completed
-      mon.addHistogram (new TH1D (icat+"nvtx", ";Vertices;Events", 50, 0, 50));
-      mon.addHistogram (new TH1D (icat+"nvtxraw", ";Vertices;Events", 50, 0, 50));
-      mon.addHistogram (new TH1D (icat+"rho", ";#rho;Events", 50, 0, 25));
+
+      // Function of (-> histogram of numerator and denominator separately. Efficiencies computed after harvesting): jet pt, jet eta, jet radius, number of vertexes
+      mon.addHistogram(new TH1D(icat+"pt_numerator",   ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
+      mon.addHistogram(new TH1D(icat+"pt_denominator", ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
+
+      mon.addHistogram(new TH1D(icat+"eta_numerator",   ";#eta_{jet};Events", 25, -2.5, 2.5));
+      mon.addHistogram(new TH1D(icat+"eta_denominator", ";#eta_{jet};Events", 25, -2.5, 2.5));
       
+      mon.addHistogram(new TH1D(icat+"radius_numerator",   ";R_{jet};Events", 20, 0., 1.));
+      mon.addHistogram(new TH1D(icat+"radius_denominator", ";R_{jet};Events", 20, 0., 1.));
 
-      //tau control to be completed
-      TH1 *htaus = mon.addHistogram (new TH1D (icat + "ntaus", ";Tau multiplicity;Events", 5, 0, 5));
-      for (int ibin = 1; ibin <= htaus->GetXaxis ()->GetNbins (); ibin++)
-        {
-          TString label ("");
-          if (ibin == h->GetXaxis ()->GetNbins ())
-            label += "#geq";
-          else
-            label += "=";
-          label += (ibin - 1);
-          htaus->GetXaxis ()->SetBinLabel (ibin, label);
-        }
-      mon.addHistogram( new TH1D(icat+"tauleadpt",     ";p_{T}^{#tau};Events", 50,0,500    ));
-      mon.addHistogram( new TH1D(icat+"tauleadeta",    ";#eta^{#tau};Events",  50,-2.6,2.6 ));
-      mon.addHistogram( new TH1D(icat+"taupt",         ";p_{T}^{#tau};Events", 50,0,500    ));
-      mon.addHistogram( new TH1D(icat+"taueta",        ";#eta^{#tau};Events",  50,-2.6,2.6 ));
-      mon.addHistogram( new TH1D(icat+"taucharge",     ";p_{T}^{#tau};Events", 5,-2,2      ));
-      mon.addHistogram( new TH1D(icat+"taudz",         ";dz^{#tau};Events",    50,0,10     ));
-      mon.addHistogram( new TH1D(icat+"tauvz",         ";vz^{#tau};Events",    50,0,10     ));
-      mon.addHistogram( new TH1D(icat+"tauemfraction", ";emf^{#tau};Events",   50, 0., 5.  ));
-      mon.addHistogram( new TH1D(icat+"taudizeta"    , ";dZ^{#tau};Events",    50, 0., 10. ));
+      mon.addHistogram(new TH1D(icat+"nvtx_numerator",   ";N_{vtx};Events", 30, 0., 60.));
+      mon.addHistogram(new TH1D(icat+"nvtx_denominator", ";N_{vtx};Events", 30, 0., 60.));
 
-
-
-      //lepton control
-      mon.addHistogram( new TH1D(icat+"inclusivept", ";Transverse momentum [GeV];Events",               50, 0, 500    ));
-      mon.addHistogram( new TH1D(icat+"leadpt",      ";Transverse momentum [GeV];Events",               50, 0, 500    ));
-      mon.addHistogram( new TH1D(icat+"leadeta",     ";Pseudo-rapidity;Events",                         50, 0, 2.6    ));
-      mon.addHistogram( new TH1D(icat+"trailerpt",   ";Transverse momentum [GeV];Events",               50, 0, 500    ));
-      mon.addHistogram( new TH1D(icat+"trailereta",  ";Pseudo-rapidity;Events",                         50, 0, 2.6    ));
-      mon.addHistogram( new TH1D(icat+"pte",          ";Electron transverse momentum [GeV];Events",     50,0,500      ));
-      mon.addHistogram( new TH1D(icat+"ptmu",         ";Muon transverse momentum [GeV];Events",         50,0,500      ));
-      mon.addHistogram( new TH1D(icat+"qt",           ";Transverse momentum [GeV];Events / (1 GeV)",    1500, 0, 1500 ));
-      //mon.addHistogram( new TH1D(icat+"qtraw",        ";Transverse momentum [GeV];Events / (1 GeV)",    1500, 0, 1500 ));
-
-
-      // Dilepton control
-      mon.addHistogram( new TH1D(icat+"sumpt",        ";Sum of lepton transverse momenta [GeV];Events",                    50,0,500   ));
-      mon.addHistogram( new TH1D(icat+"mll",          ";Dilepton invariant mass [GeV];Events",                             50,0,250   ));
-      mon.addHistogram( new TH1D(icat+"ptll",         ";Dilepton transverse momentum [GeV];Events",                        100,0,1000 ));
-      mon.addHistogram( new TH1D(icat+"yll",          ";Rapidity;Events",                               50, 0, 3      ));
-      mon.addHistogram( new TH1D(icat+"dilarccosine", ";#theta(l,l') [rad];Events",                                        50,0,3.2   ));
-      mon.addHistogram( new TH1D(icat+"mtsum",        ";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events", 100,0,1000 ));
-      mon.addHistogram( new TH1D(icat+"ht",           ";H_{T} [GeV];Events",                                               50,0,1000  ));
-      mon.addHistogram( new TH1D(icat+"htb",          ";H_{T} (bjets) [GeV];Events",                                       50,0,1000  ));
-      mon.addHistogram( new TH1D(icat+"htnol",        "; H_[T] (no leptons) [GeV];Events",                                 50,0,1000  ));
-      mon.addHistogram( new TH1D(icat+"htbnol",       "; H_[T] (bjets, no leptons) [GeV];Events",                          50,0,1000  ));
-
-
-
-      mon.addHistogram( new TH1D(icat+"emva", "; e-id MVA; Electrons", 50, 0.95,1.0) );
-      //      mon.addHistogram( new TH1D(icat+"met",";Missing transverse energy [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1D(icat+"metnotoppt",";Missing transverse energy [GeV];Events",50,0,500) );
-
-
-      // Jet controls to be completed
-      mon.addHistogram( new TH1D(icat+"nbjets",      ";b-jet multiplicity;Events", 6,0,6) );
-
-      //extra leptons in the event
-      // third lepton pt etc
-
-      mon.addHistogram (new TH1D (icat + "csv", ";Combined Secondary Vertex;Jets", 50, 0., 1.));
-      mon.addHistogram (new TH1D (icat + "csvb", ";Combined Secondary Vertex;Jets", 50, 0., 1.));
-      mon.addHistogram (new TH1D (icat + "csvc", ";Combined Secondary Vertex;Jets", 50, 0., 1.));
-      mon.addHistogram (new TH1D (icat + "csvothers", ";Combined Secondary Vertex;Jets", 50, 0., 1.));
-      TH1 *hbtags = mon.addHistogram (new TH1D (icat + "nbtags", ";b-tag multiplicity;Events", 5, 0, 5));
-      TH1 *hbtagsJP = mon.addHistogram (new TH1D (icat + "nbtagsJP", ";b-tag multiplicity;Events", 5, 0, 5));
-      mon.addHistogram (new TH1D (icat + "leadjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
-      mon.addHistogram (new TH1D (icat + "trailerjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
-      mon.addHistogram (new TH1D (icat + "fwdjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
-      mon.addHistogram (new TH1D (icat + "leadjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
-      mon.addHistogram (new TH1D (icat + "trailerjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
-      mon.addHistogram (new TH1D (icat + "cenjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
-      TH1 *hjets = mon.addHistogram (new TH1D (icat + "njets", ";Jet multiplicity;Events", 5, 0, 5));
-      for (int ibin = 1; ibin <= hjets->GetXaxis ()->GetNbins (); ibin++)
-        {
-          TString label ("");
-          if (ibin == h->GetXaxis ()->GetNbins ())
-            label += "#geq";
-          else
-            label += "=";
-          label += (ibin - 1);
-          hjets->GetXaxis ()->SetBinLabel (ibin, label);
-          hbtags->GetXaxis ()->SetBinLabel (ibin, label);
-          hbtagsJP->GetXaxis ()->SetBinLabel (ibin, label);
-        }
-     
-      mon.addHistogram (new TH1D (icat + "mindphijmet", ";min #Delta#phi(jet,E_{T}^{miss});Events", 40, 0, 4));
-      mon.addHistogram (new TH1D (icat + "mindphijmetNM1", ";min #Delta#phi(jet,E_{T}^{miss});Events", 40, 0, 4));
-      mon.addHistogram (new TH1D (icat + "balance", ";E_{T}^{miss}/q_{T};Events", 25, 0, 2.5));
-      mon.addHistogram (new TH1D (icat + "balanceNM1", ";E_{T}^{miss}/q_{T};Events", 25, 0, 2.5));
-      mon.addHistogram (new TH1D (icat + "axialmet", ";Axial missing transvere energy [GeV];Events", 50, -100, 400));
-      mon.addHistogram (new TH1D (icat + "axialmetNM1", ";Axial missing transvere energy [GeV];Events", 50, -100, 400));
-      mon.addHistogram (new TH1D (icat + "met", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
-      mon.addHistogram (new TH1D (icat + "recoMet", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
-      mon.addHistogram (new TH1D (icat + "mt", ";Transverse mass;Events", 50, 0., 500.));
-      mon.addHistogram (new TH1D (icat + "mtresponse", ";Transverse mass response;Events", 100, 0, 2));
-      mon.addHistogram (new TH1D (icat + "mtcheckpoint", ";Transverse mass [GeV];Events", 160, 150, 1750));
-      mon.addHistogram (new TH1D (icat + "metcheckpoint", ";Missing transverse energy [GeV];Events", 100, 0, 500));
+      // Some control plots, mostly on event selection
+      mon.addHistogram(new TH1D(icat+"nvtx",    ";Vertices;Events",                        50, 0.,   50.));
+      mon.addHistogram(new TH1D(icat+"ptmu",    ";Muon transverse momentum [GeV];Events",  50, 0.,  500.));
+      mon.addHistogram(new TH1D(icat+"jetpt",   ";Transverse momentum [GeV];Events",       50, 0., 1000.));
+      mon.addHistogram(new TH1D(icat+"met",     ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
+      mon.addHistogram(new TH1D(icat+"recoMet", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
+      mon.addHistogram(new TH1D(icat+"mt",      ";Transverse mass;Events",                 50, 0.,  500.));
 
 
 
@@ -662,7 +578,6 @@ int main (int argc, char *argv[])
       
       //select the taus
       pat::TauCollection selTaus;
-      int ntaus (0);
       for (size_t itau = 0; itau < taus.size(); ++itau)
         {
           pat::Tau & tau = taus[itau];
@@ -676,16 +591,16 @@ int main (int argc, char *argv[])
           
           //      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
           //      if(tau.emFraction() >=2.) continue;
-
+          
           if(!tau.tauID("decayModeFindingNewDMs")) continue; // High pt tau. Otherwise, OldDMs
           // Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
           
           if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
-          if (!tau.tauID ("againstMuonTight3"))                           continue;
-          if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
+          // Independent from lepton rejection algos performance
+          // if (!tau.tauID ("againstMuonTight3"))                           continue;
+          // if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
          
           selTaus.push_back(tau);
-          ntaus++;
         }
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
       
@@ -710,8 +625,7 @@ int main (int argc, char *argv[])
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
           
           //cross-clean with selected leptons and photons
-          float minDRlj(9999.);
-          
+          double minDRlj(9999.);
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
             minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
           
@@ -730,10 +644,12 @@ int main (int argc, char *argv[])
       
       
       // Event classification and analyses
+      if(muTrigger)  tags.push_back("wjets");
+      if(jetTrigger) tags.push_back("qcd"  );
       if(muTrigger && jetTrigger) nMultiChannel++;
+
       
       // W+jet full analysis
-      
       if(muTrigger){
         // Selection mimicking AN2014_008_v11
         // - HLT_IsoMu24 trigger
@@ -763,62 +679,64 @@ int main (int argc, char *argv[])
         if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", tags, 2, weight);}
         if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight);}
         if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", tags, 4, weight);}
-
-
-        // Fake rate: 
-        // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
-        // use associated jet, lol
         
-        // Function of (-> histogram of numerator and denominator separately. Efficiencies computed after harvesting): jet pt, jet eta, jet radius, number of vertexes
-
-
-
+        
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-
-          mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 weight/puWeight);
-          mon.fillHisto(icat+"nvtx",       tags, vtx.size(),                 weight);
-          mon.fillHisto(icat+"rho",        tags, rho,                        weight);
-
-
-          // Lepton and dilepton control
-          mon.fillHisto(icat+"leadpt",      tags, selLeptons[0].pt(),         weight);
-          mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto(icat+"leadeta",     tags, fabs (selLeptons[0].eta()), weight);
-          mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
-
-
-          mon.fillHisto(icat+"met",          tags, recoMET.pt(),                    weight);
-          //mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
-          //mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
-
-          if(selWJetsJets.size()>0){
-          mon.fillHisto(icat+"leadjetpt",      tags, selWJetsJets[0].pt(),         weight);
-          //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selWJetsJets[0].eta()), weight);
-          //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
-          }
-
-          if(selLeptons.size()>0)
-            mon.fillHisto(icat+"ptmu",tags, selLeptons[0].pt(), weight);
+          if(icat!="step5") continue; // Only for final selection step, for a quick test
           
-          // Tau control ??? 
-          mon.fillHisto (icat+"ntaus",      tags, ntaus,                      weight);
-          if(ntaus > 0){
-            mon.fillHisto ("tauleadpt", tags, selTaus[0].pt(), weight);
-            mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(), weight);
-          }
+          
+          // Fake rate: 
+          // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
+          for(pat::JetCollection::iterator jet=selWJetsJets.begin(); jet!=selWJetsJets.end(); ++jet)
+            {
+              if(abs(jet->eta())>2.3) continue;
+              
+              double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
+              
+              mon.fillHisto(icat+"pt_denominator",     tags, jet->pt() , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_denominator",    tags, jet->eta(), weight);
+              mon.fillHisto(icat+"radius_denominator", tags, jetWidth  , weight);
+              mon.fillHisto(icat+"nvtx_denominator",   tags, vtx.size(), weight);
 
+              // Match taus
+              //cross-clean with selected leptons and photons
+              double minDRtj(9999.);
+              pat::Tau theTau;
+              for (pat::TauCollection::iterator tau=selTaus.begin(); tau!=selTaus.end(); ++tau)
+                {
+                  minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
+                  theTau=*tau;
+                }
+              if(minDRtj>0.4) continue;
+              if(theTau.pt()>20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
+              mon.fillHisto(icat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_numerator",      tags, jet->eta(), weight);
+              mon.fillHisto(icat+"radius_numerator",   tags, jetWidth  , weight);
+              mon.fillHisto(icat+"nvtx_numerator",     tags, vtx.size(), weight);
+
+            }
+
+
+          // Some control plots, mostly on event selection
+          mon.fillHisto(icat+"nvtx",    tags,  vtx.size(), weight);
+          if(selLeptons.size()>0)
+            mon.fillHisto(icat+"ptmu",    tags,  selLeptons[0].pt(), weight);
+          for(pat::JetCollection::iterator jet=selWJetsJets.begin(); jet!=selWJetsJets.end(); ++jet)
+            mon.fillHisto(icat+"jetpt",   tags, jet->pt(), weight);
+          mon.fillHisto(icat+"met",     tags,  met.pt(),     weight);
+          mon.fillHisto(icat+"recoMet", tags,  recoMET.pt(), weight);
+          mon.fillHisto(icat+"mt",      tags,  mt, weight);
         }
         
-
+        
       } // End WJets full analysis
       
       // QCD full analysis
       if(jetTrigger){
-
+        
         // - HLT_PfJet320 (450)
         // - An event vertex with Ndof>=4, |Zvtx|<24cm, |r|<2cm
         // - At least two jets pt>20GeV, |eta|<2.5. At least one of the jets is required to be matched within DeltaR<0.3 to the jet firing the jet trigger.
@@ -840,39 +758,52 @@ int main (int argc, char *argv[])
         if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 1, weight);}
         if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 2, weight);}
         
-        // Fake rate: 
-        // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
-        // use associated jet, lol
         
-        // Function of (-> histogram of numerator and denominator separately. Efficiencies computed after harvesting): jet pt, jet eta, jet radius, number of vertexes
-
-
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-
-          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          weight/puWeight);
-          mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                          weight);
-          mon.fillHisto (icat+"rho",        tags, rho,                                 weight);
-          mon.fillHisto (icat+"leadpt",     tags, selLeptons[0].pt(),         weight);
-          //mon.fillHisto (icat+"trailerpt",  tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto (icat+"leadeta",    tags, fabs (selLeptons[0].eta()), weight);
-          //mon.fillHisto (icat+"trailereta", tags, fabs (selLeptons[1].eta()), weight);
-          mon.fillHisto (icat+"ntaus",      tags, ntaus,                               weight);
-          mon.fillHisto (icat+"met",        tags, recoMET.pt(),                    weight);
-          if(selQCDJets.size()>0){
-          mon.fillHisto(icat+"leadjetpt",      tags, selQCDJets[0].pt(),         weight);
-          //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selQCDJets[0].eta()), weight);
-          //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
-          }
-          if(ntaus > 0){
-            mon.fillHisto ("tauleadpt", tags, selTaus[0].pt(),             weight);
-            mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(),             weight);
-          }
-
+          if(icat!="step5") continue; // Only for final selection step, for a quick test
           
+          // Fake rate: 
+          // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
+          for(pat::JetCollection::iterator jet=selWJetsJets.begin(); jet!=selWJetsJets.end(); ++jet)
+            {
+              if(abs(jet->eta())>2.3) continue;
+              
+              double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
+              
+              mon.fillHisto(icat+"pt_denominator",     tags, jet->pt() , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_denominator",    tags, jet->eta(), weight);
+              mon.fillHisto(icat+"radius_denominator", tags, jetWidth  , weight);
+              mon.fillHisto(icat+"nvtx_denominator",   tags, vtx.size(), weight);
+              
+              // Match taus
+              //cross-clean with selected leptons and photons
+              double minDRtj(9999.);
+              pat::Tau theTau;
+              for (pat::TauCollection::iterator tau=selTaus.begin(); tau!=selTaus.end(); ++tau)
+                {
+                  minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
+                  theTau=*tau;
+                }
+              if(minDRtj>0.4) continue;
+              if(theTau.pt()>20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
+              mon.fillHisto(icat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_numerator",      tags, jet->eta(), weight);
+              mon.fillHisto(icat+"radius_numerator",   tags, jetWidth  , weight);
+              mon.fillHisto(icat+"nvtx_numerator",     tags, vtx.size(), weight);
+              
+            }
+          // Some control plots, mostly on event selection
+          mon.fillHisto(icat+"nvtx",    tags,  vtx.size(), weight);
+          if(selLeptons.size()>0)
+            mon.fillHisto(icat+"ptmu",    tags,  selLeptons[0].pt(), weight);
+          for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet)
+            mon.fillHisto(icat+"jetpt",   tags, jet->pt(), weight);
+          mon.fillHisto(icat+"met",     tags,  met.pt(),     weight);
+          mon.fillHisto(icat+"recoMet", tags,  recoMET.pt(), weight);
+          // mon.fillHisto(icat+"mt",      tags,  mt, weight); // No mt for QCD selection (not requiring any lepton)
         }
         
       } // End single lepton full analysis
@@ -938,7 +869,7 @@ int main (int argc, char *argv[])
               //cross-clean with selected leptons and photons
               double minDRlj (9999.), minDRlg (9999.);
               for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-                minDRlj = TMath::Min (minDRlj, deltaR (jets[ijet].p4(), selLeptons[ilep].p4()));
+                minDRlj = TMath::Min (minDRlj, double(deltaR(jets[ijet].p4(), selLeptons[ilep].p4())));
               // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
               // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
               if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
