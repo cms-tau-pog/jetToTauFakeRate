@@ -258,7 +258,7 @@ int main (int argc, char *argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK5PFchs.txt").Data ());
 
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
+  // MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -306,7 +306,9 @@ int main (int argc, char *argv[])
   int treeStep (totalEntries / 50);
   //DuplicatesChecker duplicatesChecker;
   //int nDuplicates(0);
+  int nSkipped(0);
   int nMultiChannel(0);
+  int nNoChannel(0);
   for (size_t iev = 0; iev < totalEntries; iev++)
     {
       if (iev % treeStep == 0)
@@ -327,13 +329,13 @@ int main (int argc, char *argv[])
       if (!tr.isValid ())
         return false;
 
-      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_Jet450_v*")); // It is unprescaled
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*")                                                                    );
+      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*")); // It is unprescaled
+      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*"));
       
       if (filterOnlyJETHT)    {                     muTrigger = false; }
       if (filterOnlySINGLEMU) { jetTrigger = false;                    }
       
-      if (!(jetTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+      if (!(jetTrigger || muTrigger)){ nSkipped++; continue;}         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       mon.fillHisto("initNorm", tags, 1., 1.);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
       
@@ -526,18 +528,18 @@ int main (int argc, char *argv[])
           int lid = leptons[ilep].pdgId();
           
           //apply muon corrections
-          if (abs (lid) == 13)
-            {
-              if (muCor)
-                {
-                  TLorentzVector p4 (leptons[ilep].px(), leptons[ilep].py(), leptons[ilep].pz(), leptons[ilep].energy());
-                  muCor->applyPtCorrection (p4, lid < 0 ? -1 : 1);
-                  if (isMC) muCor->applyPtSmearing (p4, lid < 0 ? -1 : 1, false);
-                  muDiff -= leptons[ilep].p4();
-                  leptons[ilep].setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
-                  muDiff += leptons[ilep].p4();
-                }
-            }
+          // if (abs (lid) == 13)
+          //   {
+          //     if (muCor)
+          //       {
+          //         TLorentzVector p4 (leptons[ilep].px(), leptons[ilep].py(), leptons[ilep].pz(), leptons[ilep].energy());
+          //         muCor->applyPtCorrection (p4, lid < 0 ? -1 : 1);
+          //         if (isMC) muCor->applyPtSmearing (p4, lid < 0 ? -1 : 1, false);
+          //         muDiff -= leptons[ilep].p4();
+          //         leptons[ilep].setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
+          //         muDiff += leptons[ilep].p4();
+          //       }
+          //   }
           
           //no need for charge info any longer
           lid = abs (lid);
@@ -646,7 +648,7 @@ int main (int argc, char *argv[])
       if(muTrigger)  tags.push_back("wjets");
       if(jetTrigger) tags.push_back("qcd"  );
       if(muTrigger && jetTrigger) nMultiChannel++;
-
+      if(!muTrigger && !jetTrigger) nNoChannel++;
       
       // W+jet full analysis
       if(muTrigger){
@@ -663,8 +665,12 @@ int main (int argc, char *argv[])
         // One lepton
         bool passLeptonSelection(selLeptons.size()==1); passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
         // Transverse mass
-        LorentzVector leptonformt = selLeptons[0].p4();
-        double mt =utils::cmssw::getMT<LorentzVector,LorentzVector>(leptonformt,recoMET);
+        double mt(0.);
+        if(selLeptons.size()>0)
+          {
+            LorentzVector leptonformt = selLeptons[0].p4();
+            mt =utils::cmssw::getMT<const LorentzVector,LorentzVector>(leptonformt,recoMET);
+          }
         bool passMtSelection(mt>50 );
         // At least one jet not overlapping with the muon
         bool passJetSelection(selWJetsJets.size()>0);
@@ -921,7 +927,9 @@ int main (int argc, char *argv[])
           //  }
         }
     }
+  if(nSkipped>0) cout << "Warning! There were " << nSkipped << " skipped because of trigger events out of " << totalEntries << " events!" << endl;
   if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
+  if(nNoChannel>0) cout << "Warning! There were " << nNoChannel << " no-channel events out of " << totalEntries << " events!" << endl;
   printf ("\n");
 
   //##############################################
