@@ -4,7 +4,7 @@ import json
 import optparse
 import commands
 import LaunchOnCondor
-import UserCode.llvv_fwk.storeTools_cff as storeTools
+import TauAnalysis.JetToTauFakeRate.storeTools_cff as storeTools
 
 """
 Gets the value of a given item
