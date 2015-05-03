@@ -365,7 +365,19 @@ int main (int argc, char *argv[])
       if (!tr.isValid ())
         return false;
 
-      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*")); // It is unprescaled
+      /*
+        if(iev <100 && iev >95)
+        {
+        cout << "AVAILABLE TRIGGER BITS" << endl;
+        std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_*Jet*");
+          for(size_t t=0;t<matches.size();t++)
+          cout << "\t\t\t" << matches[t]->c_str() << endl;
+          }
+      */
+      
+      //      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*")); // It is unprescaled
+      // Turns out that the only single jet trigger available for those samples is HLT_PFJet260, which has L1 prescale =1 but HLT prescale=170.
+      bool jetTrigger  (utils::passTriggerPatterns(tr, "HLT_PFJet260_v*"));
       bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*"));
       
       if (filterOnlyJETHT)    {                     muTrigger = false; }
@@ -693,8 +705,8 @@ int main (int argc, char *argv[])
       
       
       // Event classification and analyses
-      if(muTrigger)  tags.push_back("wjets");
-      if(jetTrigger) tags.push_back("qcd"  );
+      //if(muTrigger)  tags.push_back("wjets");
+      //if(jetTrigger) tags.push_back("qcd"  );
       if(muTrigger && jetTrigger) nMultiChannel++;
       if(!muTrigger && !jetTrigger) nNoChannel++;
       
@@ -707,7 +719,9 @@ int main (int argc, char *argv[])
         // - Transverse mass Mt>50GeV (muon+MET)
         // - At least one jet pt>20GeV, |eta|<2.5 not overlapping with the muon withing DeltaR<0.7
         
-        
+        vector<TString> wjetTags(1, "all");
+        wjetTags.push_back("wjet");
+
         // At least one event vertex
         bool passVtxSelection(vtx.size()>0); // Ask someone about the offlineSkimmedPrimaryVertices collection
         // One lepton
@@ -727,11 +741,11 @@ int main (int argc, char *argv[])
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
         mon.fillHisto("initNorm", tags, 3., 1.);
-                                                                                           { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", tags, 0, weight);}
-        if(passVtxSelection)                                                               { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", tags, 1, weight);}
-        if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", tags, 2, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", tags, 4, weight);}
+                                                                                           { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", wjetTags, 0, weight);}
+        if(passVtxSelection)                                                               { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", wjetTags, 1, weight);}
+        if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", wjetTags, 2, weight);}
+        if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", wjetTags, 3, weight);}
+        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", wjetTags, 4, weight);}
         
         
         // Fill the control plots
@@ -749,10 +763,10 @@ int main (int argc, char *argv[])
               
               double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
               
-              mon.fillHisto(icat+"pt_denominator",     tags, jet->pt() , weight); // Variable number of bins to be implemented
-              mon.fillHisto(icat+"eta_denominator",    tags, jet->eta(), weight);
-              mon.fillHisto(icat+"radius_denominator", tags, jetWidth  , weight);
-              mon.fillHisto(icat+"nvtx_denominator",   tags, vtx.size(), weight);
+              mon.fillHisto(icat+"pt_denominator",     wjetTags, jet->pt() , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_denominator",    wjetTags, jet->eta(), weight);
+              mon.fillHisto(icat+"radius_denominator", wjetTags, jetWidth  , weight);
+              mon.fillHisto(icat+"nvtx_denominator",   wjetTags, vtx.size(), weight);
 
               // This must be repeated for each discriminator
               for(size_t l=0; l<tauDiscriminators.size(); ++l){
@@ -769,23 +783,23 @@ int main (int argc, char *argv[])
                   }
                 if(minDRtj>0.4) continue;
                 if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
-                mon.fillHisto(icat+tcat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
-                mon.fillHisto(icat+tcat+"eta_numerator",      tags, jet->eta(), weight);
-                mon.fillHisto(icat+tcat+"radius_numerator",   tags, jetWidth  , weight);
-                mon.fillHisto(icat+tcat+"nvtx_numerator",     tags, vtx.size(), weight);
+                mon.fillHisto(icat+tcat+"pt_numerator",       wjetTags, jet->pt() , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"eta_numerator",      wjetTags, jet->eta(), weight);
+                mon.fillHisto(icat+tcat+"radius_numerator",   wjetTags, jetWidth  , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",     wjetTags, vtx.size(), weight);
               }
             }
 
           
           // Some control plots, mostly on event selection
-          mon.fillHisto(icat+"nvtx",    tags,  vtx.size(), weight);
+          mon.fillHisto(icat+"nvtx",    wjetTags,  vtx.size(), weight);
           if(selLeptons.size()>0)
-            mon.fillHisto(icat+"ptmu",    tags,  selLeptons[0].pt(), weight);
+            mon.fillHisto(icat+"ptmu",    wjetTags,  selLeptons[0].pt(), weight);
           for(pat::JetCollection::iterator jet=selWJetsJets.begin(); jet!=selWJetsJets.end(); ++jet)
-            mon.fillHisto(icat+"jetpt",   tags, jet->pt(), weight);
-          mon.fillHisto(icat+"met",     tags,  met.pt(),     weight);
-          mon.fillHisto(icat+"recoMet", tags,  recoMET.pt(), weight);
-          mon.fillHisto(icat+"mt",      tags,  mt, weight);
+            mon.fillHisto(icat+"jetpt",   wjetTags, jet->pt(), weight);
+          mon.fillHisto(icat+"met",     wjetTags,  met.pt(),     weight);
+          mon.fillHisto(icat+"recoMet", wjetTags,  recoMET.pt(), weight);
+          mon.fillHisto(icat+"mt",      wjetTags,  mt, weight);
         }
         
         
@@ -793,6 +807,8 @@ int main (int argc, char *argv[])
       
       // QCD full analysis
       if(jetTrigger){
+        vector<TString> qcdTags(1, "all");
+        qcdTags.push_back("qcd");
         
         // - HLT_PfJet320 (450)
         // - An event vertex with Ndof>=4, |Zvtx|<24cm, |r|<2cm
@@ -811,9 +827,9 @@ int main (int argc, char *argv[])
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
         mon.fillHisto("initNorm", tags, 3., 1.);
-                                                 { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 0, weight);}
-        if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 1, weight);}
-        if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 2, weight);}
+                                                 { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", qcdTags, 0, weight);}
+        if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", qcdTags, 1, weight);}
+        if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", qcdTags, 2, weight);}
         
         
         // Fill the control plots
@@ -830,10 +846,10 @@ int main (int argc, char *argv[])
               
               double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
               
-              mon.fillHisto(icat+"pt_denominator",     tags, jet->pt() , weight); // Variable number of bins to be implemented
-              mon.fillHisto(icat+"eta_denominator",    tags, jet->eta(), weight);
-              mon.fillHisto(icat+"radius_denominator", tags, jetWidth  , weight);
-              mon.fillHisto(icat+"nvtx_denominator",   tags, vtx.size(), weight);
+              mon.fillHisto(icat+"pt_denominator",     qcdTags, jet->pt() , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_denominator",    qcdTags, jet->eta(), weight);
+              mon.fillHisto(icat+"radius_denominator", qcdTags, jetWidth  , weight);
+              mon.fillHisto(icat+"nvtx_denominator",   qcdTags, vtx.size(), weight);
               
               // This must be repeated for each discriminator
               for(size_t l=0; l<tauDiscriminators.size(); ++l){
@@ -849,20 +865,21 @@ int main (int argc, char *argv[])
                   }
                 if(minDRtj>0.4) continue;
                 if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
-                mon.fillHisto(icat+tcat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
-                mon.fillHisto(icat+tcat+"eta_numerator",      tags, jet->eta(), weight);
-                mon.fillHisto(icat+tcat+"radius_numerator",   tags, jetWidth  , weight);
-                mon.fillHisto(icat+tcat+"nvtx_numerator",     tags, vtx.size(), weight);
+                mon.fillHisto(icat+tcat+"pt_numerator",       qcdTags, jet->pt() , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"eta_numerator",      qcdTags, jet->eta(), weight);
+                mon.fillHisto(icat+tcat+"radius_numerator",   qcdTags, jetWidth  , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",     qcdTags, vtx.size(), weight);
+                
               }
             }
           // Some control plots, mostly on event selection
-          mon.fillHisto(icat+"nvtx",    tags,  vtx.size(), weight);
+          mon.fillHisto(icat+"nvtx",    qcdTags,  vtx.size(), weight);
           if(selLeptons.size()>0)
-            mon.fillHisto(icat+"ptmu",    tags,  selLeptons[0].pt(), weight);
+            mon.fillHisto(icat+"ptmu",    qcdTags,  selLeptons[0].pt(), weight);
           for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet)
-            mon.fillHisto(icat+"jetpt",   tags, jet->pt(), weight);
-          mon.fillHisto(icat+"met",     tags,  met.pt(),     weight);
-          mon.fillHisto(icat+"recoMet", tags,  recoMET.pt(), weight);
+            mon.fillHisto(icat+"jetpt",   qcdTags, jet->pt(), weight);
+          mon.fillHisto(icat+"met",     qcdTags,  met.pt(),     weight);
+          mon.fillHisto(icat+"recoMet", qcdTags,  recoMET.pt(), weight);
           // mon.fillHisto(icat+"mt",      tags,  mt, weight); // No mt for QCD selection (not requiring any lepton)
         }
         
