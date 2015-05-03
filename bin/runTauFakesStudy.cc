@@ -601,16 +601,14 @@ int main (int argc, char *argv[])
       std::sort (leptons.begin (), leptons.end (), utils::sort_CandidatesByPt);
 
       LorentzVector muDiff (0, 0, 0, 0);
-      std::vector < patUtils::GenericLepton > selLeptons, selSingleLepLeptons; // Different main lepton definitions
-      double nVetoE(0), nVetoMu(0);
+      std::vector < patUtils::GenericLepton > selLeptons; // Different main lepton definitions
+      double nVetoLeptons(0);
       for (size_t ilep = 0; ilep < leptons.size (); ilep++)
         {
           bool 
             passKin(true),             passId(true),              passIso(true),
-            passSingleLepKin(true),    passSingleLepId(true),     passSingleLepIso(true),
-            passVetoSingleLepKin(true),passVetoSingleLepId(true), passVetoSingleLepIso(true);
-          
-          int lid = leptons[ilep].pdgId ();
+            passVetoKin(true),          passVetoId(true),          passVetoIso(true);
+          int lid = leptons[ilep].pdgId();
           
           //apply muon corrections
           if (abs (lid) == 13)
@@ -639,39 +637,29 @@ int main (int argc, char *argv[])
           //kinematics
           double leta = fabs (lid == 11 ? leptons[ilep].el.superCluster ()->eta() : leptons[ilep].eta());
           
-          // Dileptons main kin
-          if (leptons[ilep].pt () < 20.)                      passKin = false;
-          if (leta > (lid == 11 ? 2.5 : 2.4))                passKin = false;
-          if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
-          
           // Single lepton main + veto kin
-          if (leptons[ilep].pt () < (lid==11 ? 35. : 30.))   passSingleLepKin = false;
-          if (leta > (lid == 11 ? 2.5 : 2.1))                { passSingleLepKin = false; passVetoSingleLepKin = false; }
-          if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) { passSingleLepKin = false; passVetoSingleLepKin = false; } // Crack veto
+          if (leptons[ilep].pt () < (lid==11 ? 30. : 25.))     passKin = false;
+          if (leta > (lid == 11 ? 2.5 : 2.1))                { passKin = false; passVetoKin = false; }
+          if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) { passKin = false; passVetoKin = false; } // Crack veto
           
           // Single lepton veto kin
-          if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoSingleLepKin = false;
+          if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoKin = false;
 
           //Cut based identification 
-          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
-          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
-          passVetoSingleLepId = passId;
+          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+          passVetoId = passId;
 
           //isolation
-          passIso          = lid == 11 ? patUtils::passIso (leptons[ilep].el, patUtils::llvvElecIso::Loose) : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Loose); // Try tight iso for dilepton
-          passSingleLepIso = lid == 11 ? patUtils::passIso (leptons[ilep].el, patUtils::llvvElecIso::Tight) : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Tight); // Try tight iso for dilepton
-          passVetoSingleLepIso = passIso;
+          passIso = lid == 11 ? patUtils::passIso (leptons[ilep].el, patUtils::llvvElecIso::Tight) : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Tight); // Try tight iso for dilepton
+          passVetoIso = passIso;
           
-          if (passKin          && passId          && passIso)          selLeptons.push_back(leptons[ilep]);
-          if (passSingleLepKin && passSingleLepId && passSingleLepIso) selSingleLepLeptons.push_back(leptons[ilep]);
-          else if(passVetoSingleLepKin && passVetoSingleLepId && passVetoSingleLepIso) lid==11 ? nVetoE++ : nVetoMu++;
+          if (passKin && passId && passIso) selLeptons.push_back(leptons[ilep]);
+          else if(passVetoKin && passVetoId && passVetoIso) nVetoLeptons++;// "else if" is for having nVetoLeptons to be the number of *additional* leptons in the event.
           
         }
       std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
-      std::sort(selSingleLepLeptons.begin(), selSingleLepLeptons.end(), utils::sort_CandidatesByPt);
       LorentzVector recoMET = met - muDiff;
       
-
       //select the taus
       pat::TauCollection selTaus;
       int ntaus (0);
@@ -681,8 +669,8 @@ int main (int argc, char *argv[])
           if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
           
           bool overlapWithLepton(false);
-          for(int l1=0; l1<(int)selSingleLepLeptons.size();++l1){
-            if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
+          for(int l1=0; l1<(int)selLeptons.size();++l1){
+            if(deltaR(tau, selLeptons[l1])<0.1){overlapWithLepton=true; break;}
           }
           if(overlapWithLepton) continue;
           
@@ -712,10 +700,7 @@ int main (int argc, char *argv[])
       
       //select the jets
       pat::JetCollection
-        selJets, selBJets,
-        selSingleLepJets, selSingleLepBJets;
-      int njets (0), nbtags (0), nbtagsJP (0);
-      double mindphijmet (9999.);
+        selWJetsJets, selQCDJets;
       for (size_t ijet = 0; ijet < jets.size(); ijet++)
         {
           if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 4.7) continue;
@@ -725,156 +710,68 @@ int main (int argc, char *argv[])
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
           
           //cross-clean with selected leptons and photons
-          float minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
-
+          float minDRlj(9999.);
+          
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
             minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
-          // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-          // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
-          //          if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
-
-          for (size_t ilep = 0; ilep < selSingleLepLeptons.size(); ilep++)
-            minDRljSingleLep = TMath::Min(minDRljSingleLep, deltaR (jets[ijet], selSingleLepLeptons[ilep]));
-
+          
           //jet id
           bool passPFloose = true;      //FIXME --> Need to be updated according to te latest recipe;
           float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
           bool passLooseSimplePuId = true;      //FIXME --> Need to be updated according to the latest recipe
-          if (jets[ijet].pt() > 30)
-            {
-              mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 0);
-              if (passPFloose)                        mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 1);
-              if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
-              if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
-            }
-          if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <30 || fabs(jets[ijet].eta()) > 2.5) continue;
+          if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.5) continue;
 
-
-          if (minDRlj >= 0.4){
-            selJets.push_back(jets[ijet]);
-            njets++;
-          }
-          
-          float minDRtj(9999.);
-          for(size_t itau=0; itau<selTaus.size(); ++itau)
-            {
-              minDRtj = TMath::Min(minDRtj, deltaR(jets[ijet], selTaus[itau]));
-            }
-          if(minDRtj >0.4 && minDRljSingleLep >= 0.4) selSingleLepJets.push_back(jets[ijet]);
-          
-
-          
-          float dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
-          if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-          bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
-          // Apparently this V2 has the following preliminary operating points:
-          // These preliminary operating points were derived from ttbar events:
-          //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
-          //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
-          //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
-
-          // update according to the SF measured by BTV: NOT YET!
-          /// if (isMC)
-          ///   {
-          ///     int flavId = jets[ijet].partonFlavour();
-          ///     if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-          ///     else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-          ///     else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-          ///   }
-          if(!hasCSVtag) continue;
-
-          if(minDRlj > 0.4){
-            nbtags++;
-            selBJets.push_back(jets[ijet]);
-          }
-          hasCSVtag = jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
-          if(!hasCSVtag) continue;
-          if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
-          
+          selQCDJets.push_back(jets[ijet]);
+          if (minDRlj < 0.7) continue;
+          selWJetsJets.push_back(jets[ijet]);
         }
-      std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
-      std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
-      std::sort (selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
-      std::sort (selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
+      std::sort (selWJetsJets.begin(),  selWJetsJets.end(),  utils::sort_CandidatesByPt);
+      std::sort (selQCDJets.begin(),  selQCDJets.end(),  utils::sort_CandidatesByPt);
       
-      //
-      // ASSIGN CHANNEL
-      //
-      std::vector < TString > chTags; chTags.clear();
-      int 
-        dilId (1),
-        slepId(0);
-      LorentzVector dileptonSystem (0, 0, 0, 0);
-      if (selLeptons.size() >= 2)
-        {
-          for (size_t ilep = 0; ilep < 2; ilep++)
-            {
-              dilId *= selLeptons[ilep].pdgId();
-              int id (abs (selLeptons[ilep].pdgId()));
-              dileptonSystem += selLeptons[ilep].p4();
-            }
-          
-        }
       
-      if(selSingleLepLeptons.size()>0)
-        slepId=selSingleLepLeptons[0].pdgId();
+      // Event classification and analyses
+      if(muTrigger && jetTrigger) nMultiChannel++;
       
-      // Event classification. Single lepton triggers are first in order to ensure that the lower threshold dilepton triggers do not steal events from the single lepton category. emu trigger is last in order to ensure that it does not break the balance between ee and mumu
+      // W+jet full analysis
       
-      bool 
-        isSingleMu(false),
-        isSingleE(false),
-        isDoubleMu(false),
-        isDoubleE(false),
-        isEMu(false),
-        isUnclassified(false);
-      int multiChannel(0);
-      //if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ){ isSingleMu     = true; multiChannel++; chTags.push_back("singlemu");}//
-      //else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ){ isSingleE      = true; multiChannel++; chTags.push_back("singlee"); }//
-      //if( abs(dilId)==121 && eeTrigger  )                                 { isDoubleE      = true; multiChannel++; chTags.push_back("ee");      }//
-      //else if( abs(dilId)==169 && mumuTrigger)                            { isDoubleMu     = true; multiChannel++; chTags.push_back("mumu");    }//
-      //else if( abs(dilId)==143 && emuTrigger )                            { isEMu          = true; multiChannel++; chTags.push_back("emu");     }//
-      //else                                                                { isUnclassified = true; multiChannel++;}//chTags.push_back("unclassified");
-
-      // keep in mind the eventCategory thingy for more refined categorization // TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
-      //std::vector < TString > tags (1, "all");
-      for (size_t ich = 0; ich < chTags.size(); ich++)
-        {
-          tags.push_back (chTags[ich]);
-          //tags.push_back( chTags[ich]+evCat );
-        }
-      if(multiChannel>1) nMultiChannel++;
-      //      if (/*chTags.size() == 0 || chTags.size() >1 */ multiChannel>1){ cout << "ALARM! chTags.size() == " << chTags.size() << ", and that should NEVER happen!!!" << endl; /*continue;*/ }// That should never happen ("unclassified" is always present)
-      
-
-      // Dilepton full analysis
-      //if( tags[1] == "ee"|| tags[1] == "emu" || tags[1] == "mumu"){
-      if( isDoubleE || isEMu || isDoubleMu){
+      if(muTrigger){
+        // Selection mimicking AN2014_008_v11
+        // - HLT_IsoMu24 trigger
+        // - An event vertex with Ndof>=4, |Zvtx|<24cm, |r|<2cm
+        // - A muon Pt>25GeV, |eta|<2.1, passing deltabeta-corrected isolation I<0.06ptmu  (Tight muon)
+        // - Transverse mass Mt>50GeV (muon+MET)
+        // - At least one jet pt>20GeV, |eta|<2.5 not overlapping with the muon withing DeltaR<0.7
         
-        if(selLeptons.size()<2) continue; // Save time
-        // Apply lepton efficiencies
-        //for(size_t ilep=0; ilep<2; ++ilep){
-        //  int id (abs (selLeptons[ilep].pdgId()));
-        //  weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[ilep].pt(), selLeptons[ilep].eta(), id, id == 11 ? "loose" : "loose").first : 1.0;
-        //}
         
-        // Event selection booleans
-        bool passMllVeto(tags[1] == "emu" ? dileptonSystem.mass()>12. : (fabs(dileptonSystem.mass()-91.)>15 && dileptonSystem.mass()>12. ) );
-        bool passJetSelection(selJets.size()>1);
-        bool passMetSelection(recoMET.pt()>40.);
-        bool passOS(selLeptons[0].pdgId() * selLeptons[1].pdgId() < 0 );
-        bool passBtagsSelection(selBJets.size()>1);
+        // At least one event vertex
+        bool passVtxSelection(vtx.size()>0); // Ask someone about the offlineSkimmedPrimaryVertices collection
+        // One lepton
+        bool passLeptonSelection(selLeptons.size()==1); passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
+        // Transverse mass
+        LorentzVector leptonformt = selLeptons[0].p4();
+        double mt =utils::cmssw::getMT<LorentzVector,LorentzVector>(leptonformt,recoMET);
+        bool passMtSelection(mt>50 );
+        // At least one jet not overlapping with the muon
+        bool passJetSelection(selWJetsJets.size()>0);
+
        
-
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
-                                                                                                 { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", tags, 0, weight);       mon.fillHisto("initNorm", tags, 3., 1.);}
-        if(passMllVeto   )                                                                       { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", tags, 1, weight); }
-        if(passMllVeto && passJetSelection )                                                     { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", tags, 2, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection )                                 { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS )                       { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", tags, 4, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection ) { ctrlCats.push_back("step6"); mon.fillHisto("eventflow", tags, 5, weight); }
+        mon.fillHisto("initNorm", tags, 3., 1.);
+                                                                                           { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", tags, 0, weight);}
+        if(passVtxSelection)                                                               { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", tags, 1, weight);}
+        if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", tags, 2, weight);}
+        if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight);}
+        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", tags, 4, weight);}
+
+
+        // Fake rate: 
+        // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
+        // use associated jet, lol
         
+        // Function of (-> histogram of numerator and denominator separately. Efficiencies computed after harvesting): jet pt, jet eta, jet radius, number of vertexes
+
+
 
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
@@ -892,41 +789,21 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"leadeta",     tags, fabs (selLeptons[0].eta()), weight);
           mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
 
-          float thetall(utils::cmssw::getArcCos<patUtils::GenericLepton>(selLeptons[0],selLeptons[1]));
-          double sumpt(selLeptons[0].pt()+selLeptons[1].pt());
-          double mtsum(0);///utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[0],met)+utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[1],met));
 
-          mon.fillHisto(icat+"yll",          tags, fabs(dileptonSystem.Rapidity()), weight);
-          mon.fillHisto(icat+"mll",          tags, dileptonSystem.mass(),           weight);
-          mon.fillHisto(icat+"ptll",         tags, dileptonSystem.pt(),             weight);
           mon.fillHisto(icat+"met",          tags, recoMET.pt(),                    weight);
-          mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
-          mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
-          mon.fillHisto(icat+"mtsum",        tags, mtsum,                           weight);
-          mon.fillHisto(icat+"qt",           tags, dileptonSystem.pt(),             weight, true);
-          // mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true);                                                                                      
-          if(selJets.size()>0){
-          mon.fillHisto(icat+"leadjetpt",      tags, selJets[0].pt(),         weight);
+          //mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
+          //mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
+
+          if(selWJetsJets.size()>0){
+          mon.fillHisto(icat+"leadjetpt",      tags, selWJetsJets[0].pt(),         weight);
           //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selJets[0].eta()), weight);
+          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selWJetsJets[0].eta()), weight);
           //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
           }
 
-          double
-            ht    (sumpt),
-            htb   (sumpt),
-            htnol (0),
-            htbnol(0);
-
-          for(size_t ilep=0; ilep<2; ++ilep){
-            double lepid(fabs(selLeptons[ilep].pdgId()));
-            double leppt(selLeptons[ilep].pt());
-            mon.fillHisto(icat+"inclusivept",       tags, leppt, weight);
-            if(lepid==11) mon.fillHisto(icat+"pte", tags, leppt, weight);
-            if(lepid==13) mon.fillHisto(icat+"ptmu",tags, leppt, weight);
-          }
-
-
+          if(selLeptons.size()>0)
+            mon.fillHisto(icat+"ptmu",tags, selLeptons[0].pt(), weight);
+          
           // Tau control ??? 
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                      weight);
           if(ntaus > 0){
@@ -934,70 +811,41 @@ int main (int argc, char *argv[])
             mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(), weight);
           }
 
-          for(size_t ijet=0; ijet<selJets.size(); ++ijet)
-            {
-              ht+=selJets[ijet].pt();
-              htnol+=selJets[ijet].pt();
-              if(ijet<selBJets.size()) // Hack in order to have only one loop. Exploits the fact that selBjets are a subset of selJets.
-                {
-                  htb+=selBJets[ijet].pt();
-                  htbnol+=selBJets[ijet].pt();
-                }
-              
-              double csv (selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
-              mon.fillHisto ("csv", tags, csv, weight);
-              if (!isMC) continue;
-              int flavId = selJets[ijet].partonFlavour();
-              TString jetFlav ("others");
-              if (abs (flavId) == 5) jetFlav = "b";
-              else if (abs (flavId) == 4) jetFlav = "c";
-              mon.fillHisto ("csv" + jetFlav, tags, csv, weight);
-            }
-          
-          ht+=met.pt();
-          htb+=met.pt();
-          htnol+=met.pt();
-          htbnol+=met.pt();
-
-          mon.fillHisto(icat+"ht",     tags, ht,              weight);
-          mon.fillHisto(icat+"htb",    tags, htb,             weight);
-          mon.fillHisto(icat+"htnol",  tags, htnol,           weight);
-          mon.fillHisto(icat+"htbnol", tags, htbnol,          weight);
-          
-          mon.fillHisto(icat+"nbjets", tags, selBJets.size(), weight);
-          
-          
         }
         
 
-      } // End dilepton full analysis
+      } // End WJets full analysis
       
-      
-      // Single lepton full analysis
-      //if(tags[1] == "singlemu" || tags[1] == "singlee"){
-      if(isSingleMu || isSingleE){
+      // QCD full analysis
+      if(jetTrigger){
 
-        if(selSingleLepLeptons.size()!=1) continue;
-        //int id (abs (selSingleLepLeptons[0].pdgId()));
-        //weight *= isMC ? lepEff.getLeptonEfficiency(selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
+        // - HLT_PfJet320 (450)
+        // - An event vertex with Ndof>=4, |Zvtx|<24cm, |r|<2cm
+        // - At least two jets pt>20GeV, |eta|<2.5. At least one of the jets is required to be matched within DeltaR<0.3 to the jet firing the jet trigger.
+        // - If there is only one jet matching the trigger requirement in the event, the jet is excluded from the fake-rate computation
+
+
+        // At least one event vertex
+        bool passVtxSelection(vtx.size()>0); // Ask someone about the offlineSkimmedPrimaryVertices collection
+        // At least two jets
+        // Insert trigger matching here, which will fix the incomplete jet selection step
+        bool passJetSelection(selQCDJets.size()>1);
         
-        // Event selection booleans
-        bool passJetSelection(selSingleLepJets.size()>1);
-        bool passMetSelection(recoMET.pt()>40.);
-        bool passBtagsSelection(selSingleLepBJets.size()>0);
-        bool passTauSelection(selTaus.size()==1);
-        bool passOS(selTaus.size()>0 ? selSingleLepLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
-
+        
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-                                                                                                      { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 0, weight);       mon.fillHisto("initNorm", tags, 3., 1.);}
-        if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 1, weight); }
-        if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 2, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("eventflowslep", tags, 3, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("eventflowslep", tags, 4, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("eventflowslep", tags, 5, weight); }
+        mon.fillHisto("initNorm", tags, 3., 1.);
+                                                 { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 0, weight);}
+        if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 1, weight);}
+        if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 2, weight);}
         
+        // Fake rate: 
+        // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
+        // use associated jet, lol
+        
+        // Function of (-> histogram of numerator and denominator separately. Efficiencies computed after harvesting): jet pt, jet eta, jet radius, number of vertexes
+
 
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
@@ -1007,16 +855,16 @@ int main (int argc, char *argv[])
           mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          weight/puWeight);
           mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                          weight);
           mon.fillHisto (icat+"rho",        tags, rho,                                 weight);
-          mon.fillHisto (icat+"leadpt",     tags, selSingleLepLeptons[0].pt(),         weight);
-          mon.fillHisto (icat+"trailerpt",  tags, selSingleLepLeptons[1].pt(),         weight);
-          mon.fillHisto (icat+"leadeta",    tags, fabs (selSingleLepLeptons[0].eta()), weight);
-          mon.fillHisto (icat+"trailereta", tags, fabs (selSingleLepLeptons[1].eta()), weight);
+          mon.fillHisto (icat+"leadpt",     tags, selLeptons[0].pt(),         weight);
+          //mon.fillHisto (icat+"trailerpt",  tags, selLeptons[1].pt(),         weight);
+          mon.fillHisto (icat+"leadeta",    tags, fabs (selLeptons[0].eta()), weight);
+          //mon.fillHisto (icat+"trailereta", tags, fabs (selLeptons[1].eta()), weight);
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                               weight);
           mon.fillHisto (icat+"met",        tags, recoMET.pt(),                    weight);
-          if(selSingleLepJets.size()>0){
-          mon.fillHisto(icat+"leadjetpt",      tags, selSingleLepJets[0].pt(),         weight);
+          if(selQCDJets.size()>0){
+          mon.fillHisto(icat+"leadjetpt",      tags, selQCDJets[0].pt(),         weight);
           //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selSingleLepJets[0].eta()), weight);
+          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selQCDJets[0].eta()), weight);
           //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
           }
           if(ntaus > 0){
@@ -1024,27 +872,6 @@ int main (int argc, char *argv[])
             mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(),             weight);
           }
 
-          mon.fillHisto(icat+"nbjets", tags, selSingleLepBJets.size(), weight);
-// dilepton only           mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
-// dilepton only           mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
-// dilepton only           mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
-// dilepton only           //these two are used to reweight photon -> Z, the 3rd is a control
-// dilepton only           mon.fillHisto (icat+"qt",    tags, dileptonSystem.pt(),             weight, true);
-// dilepton only           ///     mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true); 
-
-          for (size_t ijet = 0; ijet < selSingleLepJets.size(); ijet++)
-            {
-              if (selSingleLepJets[ijet].pt() < 30 || fabs (selSingleLepJets[ijet].eta()) > 2.5) continue;
-              
-              double csv (selSingleLepJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
-              mon.fillHisto ("csv", tags, csv, weight);
-              if (!isMC) continue;
-              int flavId = selSingleLepJets[ijet].partonFlavour();
-              TString jetFlav ("others");
-              if (abs (flavId) == 5) jetFlav = "b";
-              else if (abs (flavId) == 4) jetFlav = "c";
-              mon.fillHisto ("csv" + jetFlav, tags, csv, weight);
-            }
           
         }
         
@@ -1146,10 +973,6 @@ int main (int argc, char *argv[])
               passLocalBveto |= hasCSVtag;
             }
 
-          bool isZsideBand ((dileptonSystem.mass() > 40 && dileptonSystem.mass() < 70) || (dileptonSystem.mass() > 110 && dileptonSystem.mass() < 200));
-          bool isZsideBandPlus ((dileptonSystem.mass() > 110 && dileptonSystem.mass() < 200));
-          bool passPreselection (true);//passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
-          bool passPreselectionMbvetoMzmass (true);///passQt && passThirdLeptonVeto && passMinDphijmet);
 
           //re-assign the event category to take migrations into account
           //      TString evCat  = eventCategoryInst.GetCategory(tightVarJets,dileptonSystem);
