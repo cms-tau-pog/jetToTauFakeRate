@@ -196,24 +196,60 @@ int main (int argc, char *argv[])
   controlCats.push_back("step5");
   controlCats.push_back("step6");
   
+  std::vector<TString> tauDiscriminators;
+  tauDiscriminators.clear();
+
+  tauDiscriminators.push_back("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+  tauDiscriminators.push_back("byMediumCombinedIsolationDeltaBetaCorr3Hits");
+  tauDiscriminators.push_back("byTightCombinedIsolationDeltaBetaCorr3Hits");
+  
+  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwoLT");
+  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwoLT");
+  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwoLT");
+  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwoLT");
+  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwoLT");
+  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwoLT");
+  
+  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwLT");
+  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwLT");
+  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwLT");
+  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwLT");
+  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwLT");
+  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwLT");
+  
+  tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwoLT");
+  tauDiscriminators.push_back("byLooseIsolationMVA3newDMwoLT");
+  tauDiscriminators.push_back("byMediumIsolationMVA3newDMwoLT");
+  tauDiscriminators.push_back("byTightIsolationMVA3newDMwoLT");
+  tauDiscriminators.push_back("byVTightIsolationMVA3newDMwoLT");
+  tauDiscriminators.push_back("byVVTightIsolationMVA3newDMwoLT");
+  
+  tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwLT");
+  tauDiscriminators.push_back("byLooseIsolationMVA3newDMwLT");
+  tauDiscriminators.push_back("byMediumIsolationMVA3newDMwLT");
+  tauDiscriminators.push_back("byTightIsolationMVA3newDMwLT");
+  tauDiscriminators.push_back("byVTightIsolationMVA3newDMwLT");
+  tauDiscriminators.push_back("byVVTightIsolationMVA3newDMwLT");
+
+
+
+  
   for (size_t k = 0; k < controlCats.size (); ++k)
     {
-      TString icat (controlCats[k]);
+      TString icat(controlCats[k]);
 
-
-      // Function of (-> histogram of numerator and denominator separately. Efficiencies computed after harvesting): jet pt, jet eta, jet radius, number of vertexes
-      mon.addHistogram(new TH1D(icat+"pt_numerator",   ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
       mon.addHistogram(new TH1D(icat+"pt_denominator", ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
-
-      mon.addHistogram(new TH1D(icat+"eta_numerator",   ";#eta_{jet};Events", 25, -2.5, 2.5));
       mon.addHistogram(new TH1D(icat+"eta_denominator", ";#eta_{jet};Events", 25, -2.5, 2.5));
-      
-      mon.addHistogram(new TH1D(icat+"radius_numerator",   ";R_{jet};Events", 20, 0., 1.));
       mon.addHistogram(new TH1D(icat+"radius_denominator", ";R_{jet};Events", 20, 0., 1.));
-
-      mon.addHistogram(new TH1D(icat+"nvtx_numerator",   ";N_{vtx};Events", 30, 0., 60.));
-      mon.addHistogram(new TH1D(icat+"nvtx_denominator", ";N_{vtx};Events", 30, 0., 60.));
-
+      mon.addHistogram(new TH1D(icat+"nvtx_denominator", ";N_{vtx};Events", 30, 0., 60.));        
+      for(size_t l=0; l<tauDiscriminators.size(); ++l){
+        TString tcat(tauDiscriminators[l]);
+        mon.addHistogram(new TH1D(icat+tcat+"pt_numerator",   ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
+        mon.addHistogram(new TH1D(icat+tcat+"eta_numerator",   ";#eta_{jet};Events", 25, -2.5, 2.5));
+        mon.addHistogram(new TH1D(icat+tcat+"radius_numerator",   ";R_{jet};Events", 20, 0., 1.));
+        mon.addHistogram(new TH1D(icat+tcat+"nvtx_numerator",   ";N_{vtx};Events", 30, 0., 60.));
+      }
+      
       // Some control plots, mostly on event selection
       mon.addHistogram(new TH1D(icat+"nvtx",    ";Vertices;Events",                        50, 0.,   50.));
       mon.addHistogram(new TH1D(icat+"ptmu",    ";Muon transverse momentum [GeV];Events",  50, 0.,  500.));
@@ -577,7 +613,7 @@ int main (int argc, char *argv[])
       std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
       LorentzVector recoMET = met - muDiff;
       
-      //select the taus
+      //pre-select the taus
       pat::TauCollection selTaus;
       for (size_t itau = 0; itau < taus.size(); ++itau)
         {
@@ -596,7 +632,7 @@ int main (int argc, char *argv[])
           if(!tau.tauID("decayModeFindingNewDMs")) continue; // High pt tau. Otherwise, OldDMs
           // Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
           
-          if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
+          //if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
           // Independent from lepton rejection algos performance
           // if (!tau.tauID ("againstMuonTight3"))                           continue;
           // if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
@@ -604,8 +640,20 @@ int main (int argc, char *argv[])
           selTaus.push_back(tau);
         }
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
-      
-      
+
+      // Tau IDs
+      vector<pat::TauCollection> selIdTaus;
+      selIdTaus.clear();
+      for(size_t l=0; l<tauDiscriminators.size(); ++l){
+        TString tcat(tauDiscriminators[l]);
+        pat::TauCollection temp;
+        for(pat::TauCollection::iterator tau=selTaus.begin(); tau!=selTaus.end(); ++tau){
+          if(!tau->tauID(tcat)) continue;
+          temp.push_back(*tau);
+        }
+        std::sort(temp.begin(), temp.end(), utils::sort_CandidatesByPt);
+        selIdTaus.push_back(temp);
+      }
       
       //
       //JET/MET ANALYSIS
@@ -706,25 +754,29 @@ int main (int argc, char *argv[])
               mon.fillHisto(icat+"radius_denominator", tags, jetWidth  , weight);
               mon.fillHisto(icat+"nvtx_denominator",   tags, vtx.size(), weight);
 
-              // Match taus
-              //cross-clean with selected leptons and photons
-              double minDRtj(9999.);
-              pat::Tau theTau;
-              for (pat::TauCollection::iterator tau=selTaus.begin(); tau!=selTaus.end(); ++tau)
-                {
-                  minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
-                  theTau=*tau;
-                }
-              if(minDRtj>0.4) continue;
-              if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
-              mon.fillHisto(icat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
-              mon.fillHisto(icat+"eta_numerator",      tags, jet->eta(), weight);
-              mon.fillHisto(icat+"radius_numerator",   tags, jetWidth  , weight);
-              mon.fillHisto(icat+"nvtx_numerator",     tags, vtx.size(), weight);
-
+              // This must be repeated for each discriminator
+              for(size_t l=0; l<tauDiscriminators.size(); ++l){
+                TString tcat(tauDiscriminators[l]);
+                
+                // Match taus
+                //cross-clean with selected leptons and photons
+                double minDRtj(9999.);
+                pat::Tau theTau;
+                for (pat::TauCollection::iterator tau=selIdTaus[l].begin(); tau!=selIdTaus[l].end(); ++tau)
+                  {
+                    minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
+                    theTau=*tau;
+                  }
+                if(minDRtj>0.4) continue;
+                if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
+                mon.fillHisto(icat+tcat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"eta_numerator",      tags, jet->eta(), weight);
+                mon.fillHisto(icat+tcat+"radius_numerator",   tags, jetWidth  , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",     tags, vtx.size(), weight);
+              }
             }
 
-
+          
           // Some control plots, mostly on event selection
           mon.fillHisto(icat+"nvtx",    tags,  vtx.size(), weight);
           if(selLeptons.size()>0)
@@ -772,7 +824,7 @@ int main (int argc, char *argv[])
           
           // Fake rate: 
           // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
-          for(pat::JetCollection::iterator jet=selWJetsJets.begin(); jet!=selWJetsJets.end(); ++jet)
+          for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet)
             {
               if(abs(jet->eta())>2.3) continue;
               
@@ -783,22 +835,25 @@ int main (int argc, char *argv[])
               mon.fillHisto(icat+"radius_denominator", tags, jetWidth  , weight);
               mon.fillHisto(icat+"nvtx_denominator",   tags, vtx.size(), weight);
               
-              // Match taus
-              //cross-clean with selected leptons and photons
-              double minDRtj(9999.);
-              pat::Tau theTau;
-              for (pat::TauCollection::iterator tau=selTaus.begin(); tau!=selTaus.end(); ++tau)
-                {
-                  minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
-                  theTau=*tau;
-                }
-              if(minDRtj>0.4) continue;
-              if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
-              mon.fillHisto(icat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
-              mon.fillHisto(icat+"eta_numerator",      tags, jet->eta(), weight);
-              mon.fillHisto(icat+"radius_numerator",   tags, jetWidth  , weight);
-              mon.fillHisto(icat+"nvtx_numerator",     tags, vtx.size(), weight);
-              
+              // This must be repeated for each discriminator
+              for(size_t l=0; l<tauDiscriminators.size(); ++l){
+                TString tcat(tauDiscriminators[l]);
+                // Match taus
+                //cross-clean with selected leptons and photons
+                double minDRtj(9999.);
+                pat::Tau theTau;
+                for (pat::TauCollection::iterator tau=selIdTaus[l].begin(); tau!=selIdTaus[l].end(); ++tau)
+                  {
+                    minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
+                    theTau=*tau;
+                  }
+                if(minDRtj>0.4) continue;
+                if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
+                mon.fillHisto(icat+tcat+"pt_numerator",       tags, jet->pt() , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"eta_numerator",      tags, jet->eta(), weight);
+                mon.fillHisto(icat+tcat+"radius_numerator",   tags, jetWidth  , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",     tags, vtx.size(), weight);
+              }
             }
           // Some control plots, mostly on event selection
           mon.fillHisto(icat+"nvtx",    tags,  vtx.size(), weight);
