@@ -21,9 +21,7 @@ runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --out
 # QCD
 runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .png ${ONLYQCD}
 
-## Now compute the rates
-runFakeRate --infile plotter.root --outdir blah
-
+# Now run test/harvest.sh by hand please
 
 
 # Lessen the burden on the web browser
