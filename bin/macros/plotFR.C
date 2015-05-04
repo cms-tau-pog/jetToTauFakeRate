@@ -1,14 +1,15 @@
 void plotFR(){
 
   vector<TString> analyses; analyses.clear();
-  analyses.push_back("wjets");
+  analyses.push_back("wjet");
   analyses.push_back("qcd");
 
   vector<TString> tauDiscriminators; tauDiscriminators.clear();
+
   tauDiscriminators.push_back("byLooseCombinedIsolationDeltaBetaCorr3Hits");
   tauDiscriminators.push_back("byMediumCombinedIsolationDeltaBetaCorr3Hits");
   tauDiscriminators.push_back("byTightCombinedIsolationDeltaBetaCorr3Hits");
-  
+                          
   tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwoLT");
   tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwoLT");
   tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwoLT");
@@ -46,7 +47,7 @@ void plotFR(){
       vector<TString> samples; samples.clear();
       TString step("");
            
-      if(*anal == "wjets")
+      if(*anal == "wjet")
         {
           samples.push_back("W,multijets");
           samples.push_back("QCDMuEnriched");
@@ -94,6 +95,7 @@ void plotFR(){
               if(!temp_nvtx_numerator)   temp_nvtx_numerator   = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+tcat+TString("nvtx_numerator"));   else temp_nvtx_numerator  ->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+tcat+TString("nvtx_numerator")  ));   
             }
           
+          cout << "Discriminator " << tcat << " acquired via histos like " << samples[0]+TString("/")+anal->Data()+TString("_")+step+tcat+TString("nvtx_numerator")<< endl;
           if(!temp_pt_numerator    ) cout << "temp_pt_numerator     is NULL" << endl;          
           if(!temp_eta_numerator   ) cout << "temp_eta_numerator    is NULL" << endl;
           if(!temp_radius_numerator) cout << "temp_radius_numerator is NULL" << endl;
@@ -138,6 +140,7 @@ void plotFR(){
       for(size_t l=0; l<tauDiscriminators.size(); ++l)
         l==0 ? pt_numerator[l]->Draw("") : pt_numerator[l]->Draw("same");
       c->cd(2);
+      gPad->SetLogy();
       for(size_t l=0; l<tauDiscriminators.size(); ++l)
         l==0 ? eta_numerator[l]->Draw("") : eta_numerator[l]->Draw("same");
       c->cd(3);
@@ -145,6 +148,7 @@ void plotFR(){
       for(size_t l=0; l<tauDiscriminators.size(); ++l)
         l==0 ? radius_numerator[l]->Draw("") : radius_numerator[l]->Draw("same");
       c->cd(4);
+      gPad->SetLogy();
       for(size_t l=0; l<tauDiscriminators.size(); ++l)
         l==0 ? nvtx_numerator[l]->Draw("") : nvtx_numerator[l]->Draw("same");
 
