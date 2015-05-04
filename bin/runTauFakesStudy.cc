@@ -369,7 +369,8 @@ int main (int argc, char *argv[])
         if(iev <100 && iev >95)
         {
         cout << "AVAILABLE TRIGGER BITS" << endl;
-        std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_*Jet*");
+        //std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_*Jet*");
+        std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_IsoMu*");
           for(size_t t=0;t<matches.size();t++)
           cout << "\t\t\t" << matches[t]->c_str() << endl;
           }
@@ -378,7 +379,7 @@ int main (int argc, char *argv[])
       //      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*")); // It is unprescaled
       // Turns out that the only single jet trigger available for those samples is HLT_PFJet260, which has L1 prescale =1 but HLT prescale=170.
       bool jetTrigger  (utils::passTriggerPatterns(tr, "HLT_PFJet260_v*"));
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*"));
+      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*", "HLT_IsoMu24_v*"));
       
       if (filterOnlyJETHT)    {                     muTrigger = false; }
       if (filterOnlySINGLEMU) { jetTrigger = false;                    }
@@ -725,7 +726,8 @@ int main (int argc, char *argv[])
         // At least one event vertex
         bool passVtxSelection(vtx.size()>0); // Ask someone about the offlineSkimmedPrimaryVertices collection
         // One lepton
-        bool passLeptonSelection(selLeptons.size()==1); passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
+        bool passLeptonSelection(selLeptons.size()==1); 
+        if(passLeptonSelection) passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
         // Transverse mass
         double mt(0.);
         if(selLeptons.size()>0)
@@ -821,8 +823,42 @@ int main (int argc, char *argv[])
         // At least two jets
         // Insert trigger matching here, which will fix the incomplete jet selection step
         bool passJetSelection(selQCDJets.size()>1);
-        
-        
+
+        // Check trigger firing:
+        int jetsFiring(0);
+        double fireEta(0), firePhi(0);
+        //load all the objects we will need to access
+        edm::TriggerResults triggerBits;
+        fwlite::Handle<edm::TriggerResults> triggerBitsHandle;
+        triggerBitsHandle.getByLabel(ev, "TriggerResults","","HLT"); // ?
+        if(triggerBitsHandle.isValid()) triggerBits = *triggerBitsHandle;
+        const edm::TriggerNames& trigNames = ev.triggerNames(triggerBits);
+
+        pat::TriggerObjectStandAloneCollection triggerObjects;
+        fwlite::Handle<pat::TriggerObjectStandAloneCollection> triggerObjectsHandle;
+        triggerObjectsHandle.getByLabel(ev, "selectedPatTrigger" );
+        if(triggerObjectsHandle.isValid()) triggerObjects = *triggerObjectsHandle;
+
+        for(pat::TriggerObjectStandAlone obj : triggerObjects){
+          obj.unpackPathNames(trigNames);
+          // I already know that (if(jetTrigger)) if(utils::passTriggerPatterns(tr, "HLT_PFJet260_v*"))
+          // I guess it's "both L3 and LF", that is "true true". L3 only is "false true", LF only is "true false", none is "false false"
+          if(obj.hasPathName("HLT_PFJet260_v*", true, true)){
+            for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet){
+              if( deltaR(obj.eta(), obj.phi(), jet->eta(), jet->phi()) < 0.3 ){
+                if(jetsFiring==0)
+                  {
+                    fireEta=jet->eta();
+                    firePhi=jet->phi();
+                  }
+                jetsFiring++;
+              }
+            }
+          }
+        }
+        // At least one of the jets is required to be matched with the one firing HLT
+        if(jetsFiring<1) passJetSelection=false;
+
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
@@ -843,6 +879,14 @@ int main (int argc, char *argv[])
           for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet)
             {
               if(abs(jet->eta())>2.3) continue;
+
+              // Multi-jet event: the trigger jet is excluded from the fake rate computation if there is only one jet that passes the trigger requirement
+              // In case more than one jet passes the requirement, all are used
+              if(jetsFiring==1)
+                {
+                  if(jet->eta() == fireEta && jet->phi() == firePhi) continue; // Skip the firing jet if it is the only one passing the trigger requirement
+                }
+        
               
               double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
               
