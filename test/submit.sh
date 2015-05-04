@@ -1,10 +1,11 @@
 #!/bin/bash
 
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results
 
 # cleanup
-rm -r ${OUTDIR}
+### rm -r ${OUTDIR}
 # recreate
 mkdir -p ${OUTDIR}
 
