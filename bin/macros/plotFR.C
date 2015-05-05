@@ -146,9 +146,9 @@ void plotFR(){
           
           TH1* temp_ptbinned = temp_pt_numerator    ->Rebin(19, "", ptbins);          
           temp_pt_numerator=temp_ptbinned;
-          temp_eta_numerator   ->Rebin(2);
-          temp_radius_numerator->Rebin(2);
-          temp_nvtx_numerator  ->Rebin(2);
+          //temp_eta_numerator   ->Rebin(2);
+          //temp_radius_numerator->Rebin(2);
+          //temp_nvtx_numerator  ->Rebin(2);
           
           temp_pt_numerator    ->SetMarkerColor(colours[l]);temp_pt_numerator    ->SetLineColor(colours[l]);temp_pt_numerator    ->SetLineWidth(2);temp_pt_numerator    ->SetMarkerStyle(markers[l]);temp_pt_numerator    ->SetMarkerSize(1.5);
           temp_eta_numerator   ->SetMarkerColor(colours[l]);temp_eta_numerator   ->SetLineColor(colours[l]);temp_eta_numerator   ->SetLineWidth(2);temp_eta_numerator   ->SetMarkerStyle(markers[l]);temp_eta_numerator   ->SetMarkerSize(1.5);
@@ -175,9 +175,9 @@ void plotFR(){
           cout << "Now rebinniing" << endl;
           TH1* data_temp_ptbinned = data_temp_pt_numerator    ->Rebin(19, "", ptbins);          
           data_temp_pt_numerator=data_temp_ptbinned;
-          data_temp_eta_numerator   ->Rebin(2);
-          data_temp_radius_numerator->Rebin(2);
-          data_temp_nvtx_numerator  ->Rebin(2);
+          //data_temp_eta_numerator   ->Rebin(2);
+          //data_temp_radius_numerator->Rebin(2);
+          //data_temp_nvtx_numerator  ->Rebin(2);
           
           cout << "rebinned " << endl;
           data_temp_pt_numerator    ->SetMarkerColor(colours[l]);data_temp_pt_numerator    ->SetLineColor(colours[l]);data_temp_pt_numerator    ->SetLineWidth(2);data_temp_pt_numerator    ->SetMarkerStyle(dataMarkers[l]);data_temp_pt_numerator    ->SetMarkerSize(1.5);
@@ -205,15 +205,15 @@ void plotFR(){
 
       TH1* pt_binned = pt_denominator    ->Rebin(19, "", ptbins);
       pt_denominator=pt_binned;
-      eta_denominator   ->Rebin(2);
-      radius_denominator->Rebin(2);
-      nvtx_denominator  ->Rebin(2);      
+      //eta_denominator   ->Rebin(2);
+      //radius_denominator->Rebin(2);
+      //nvtx_denominator  ->Rebin(2);      
 
       TH1* data_pt_binned = data_pt_denominator    ->Rebin(19, "", ptbins);
       data_pt_denominator=data_pt_binned;
-      data_eta_denominator   ->Rebin(2);
-      data_radius_denominator->Rebin(2);
-      data_nvtx_denominator  ->Rebin(2);      
+      //data_eta_denominator   ->Rebin(2);
+      //data_radius_denominator->Rebin(2);
+      //data_nvtx_denominator  ->Rebin(2);      
 
       for(size_t l=0; l<tauDiscriminators.size(); ++l)
         {
@@ -227,10 +227,20 @@ void plotFR(){
           radius_numerator[l]->GetYaxis()->SetTitle("Fake rate");
           nvtx_numerator  [l]->GetYaxis()->SetTitle("Fake rate");
 
-          pt_numerator    [l]->SetMaximum(10*pt_numerator    [l]->GetBinContent(pt_numerator    [l]->GetMaximumBin()));
-          eta_numerator   [l]->SetMaximum(100*eta_numerator   [l]->GetBinContent(eta_numerator   [l]->GetMaximumBin()));
-          radius_numerator[l]->SetMaximum(10*radius_numerator[l]->GetBinContent(radius_numerator[l]->GetMaximumBin()));
-          nvtx_numerator  [l]->SetMaximum(100*nvtx_numerator  [l]->GetBinContent(nvtx_numerator  [l]->GetMaximumBin()));
+          //pt_numerator    [l]->SetMaximum(10*pt_numerator    [l]->GetBinContent(pt_numerator    [l]->GetMaximumBin()));
+          //eta_numerator   [l]->SetMaximum(100*eta_numerator   [l]->GetBinContent(eta_numerator   [l]->GetMaximumBin()));
+          //radius_numerator[l]->SetMaximum(10*radius_numerator[l]->GetBinContent(radius_numerator[l]->GetMaximumBin()));
+          //nvtx_numerator  [l]->SetMaximum(100*nvtx_numerator  [l]->GetBinContent(nvtx_numerator  [l]->GetMaximumBin()));
+
+          pt_numerator    [l]->SetMaximum(1.);
+          eta_numerator   [l]->SetMaximum(1.);
+          radius_numerator[l]->SetMaximum(1.);
+          nvtx_numerator  [l]->SetMaximum(1.);
+
+          pt_numerator    [l]->SetMinimum(0.0001);
+          eta_numerator   [l]->SetMinimum(0.0001);
+          radius_numerator[l]->SetMinimum(0.0001);
+          nvtx_numerator  [l]->SetMinimum(0.0001);
           
 
           data_pt_numerator    [l]->Divide( data_pt_denominator     );
@@ -246,55 +256,67 @@ void plotFR(){
 
       TText* t = new TText(0.45, 0.7, "Full(empty) markers: data(MonteCarlo)"); t->SetNDC();
       t->SetTextSize(0.03);
-      TCanvas* c = new TCanvas("fakerate", "fakerate", 800, 800);
-      c->cd();
-      gPad->SetLogy();
-      for(size_t l=0; l<tauDiscriminators.size(); ++l)
-        {
-          l==0 ? pt_numerator[l]->Draw("") : pt_numerator[l]->Draw("same");
-          data_pt_numerator[l]->Draw("same");
-        }
-      t->Draw(""); leg->Draw("");
-      c->Modified();
-      c->Update();
-      c->Print(TString("test/results/fakes_pt_")+anal->Data()+TString(".png"));
-      c->Clear();
-      c->cd();
-      gPad->SetLogy();
-      for(size_t l=0; l<tauDiscriminators.size(); ++l)
-        {
-          l==0 ? eta_numerator[l]->Draw("") : eta_numerator[l]->Draw("same");
-          data_eta_numerator[l]->Draw("same");
-        }
-      t->Draw(""); leg->Draw("");
-      c->Modified();
-      c->Update();
-      c->Print(TString("test/results/fakes_eta_")+anal->Data()+TString(".png"));
-      c->Clear();
-      c->cd();
-      gPad->SetLogy();
-      for(size_t l=0; l<tauDiscriminators.size(); ++l)
-        {
-          l==0 ? radius_numerator[l]->Draw("") : radius_numerator[l]->Draw("same");
-          data_radius_numerator[l]->Draw("same");
-        }
-      t->Draw(""); leg->Draw("");
-      c->Modified();
-      c->Update();
-      c->Print(TString("test/results/fakes_radius_")+anal->Data()+TString(".png"));
-      c->Clear();
-      c->cd();
-      gPad->SetLogy();
-      for(size_t l=0; l<tauDiscriminators.size(); ++l)
-        {
-          l==0 ? nvtx_numerator[l]->Draw("") : nvtx_numerator[l]->Draw("same");
-          data_nvtx_numerator[l]->Draw("same");
-        }
-      t->Draw(""); leg->Draw("");
-      c->Modified();
-      c->Update();
-      c->Print(TString("test/results/fakes_nvtx_")+anal->Data()+TString(".png"));
-      
-    }
 
+
+      for(int i=0; i<2; ++i)
+        {
+
+          TCanvas* c = new TCanvas("fakerate", "fakerate", 800, 800);
+          c->cd();
+          gPad->SetLogy();
+          for(size_t l=0; l<tauDiscriminators.size(); ++l)
+            {
+              pt_numerator[l]->GetXaxis()->SetNdivisions(509,true);
+              pt_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
+              data_pt_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
+              l==0 ? pt_numerator[l]->Draw("") : pt_numerator[l]->Draw("same");
+              if(i>0) data_pt_numerator[l]->Draw("same");
+            }
+          t->Draw(""); leg->Draw("");
+          c->Modified();
+          c->Update();
+          c->Print(TString("test/results/fakes_pt_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results/fakes_pt_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Clear();
+          c->cd();
+          gPad->SetLogy();
+          for(size_t l=0; l<tauDiscriminators.size(); ++l)
+            {
+              l==0 ? eta_numerator[l]->Draw("") : eta_numerator[l]->Draw("same");
+              if(i>0)data_eta_numerator[l]->Draw("same");
+            }
+          t->Draw(""); leg->Draw("");
+          c->Modified();
+          c->Update();
+          c->Print(TString("test/results/fakes_eta_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results/fakes_eta_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Clear();
+          c->cd();
+          gPad->SetLogy();
+          for(size_t l=0; l<tauDiscriminators.size(); ++l)
+            {
+              l==0 ? radius_numerator[l]->Draw("") : radius_numerator[l]->Draw("same");
+              if(i>0)data_radius_numerator[l]->Draw("same");
+            }
+          t->Draw(""); leg->Draw("");
+          c->Modified();
+          c->Update();
+          c->Print(TString("test/results/fakes_radius_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results/fakes_radius_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Clear();
+          c->cd();
+          gPad->SetLogy();
+          for(size_t l=0; l<tauDiscriminators.size(); ++l)
+            {
+              l==0 ? nvtx_numerator[l]->Draw("") : nvtx_numerator[l]->Draw("same");
+              if(i>0)data_nvtx_numerator[l]->Draw("same");
+            }
+          t->Draw(""); leg->Draw("");
+          c->Modified();
+          c->Update();
+          c->Print(TString("test/results/fakes_nvtx_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results/fakes_nvtx_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+        } 
+    }
+  
 }
