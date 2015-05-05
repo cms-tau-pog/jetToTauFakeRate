@@ -20,33 +20,33 @@ void plotFR(){
   tauDiscriminators.push_back("byMediumCombinedIsolationDeltaBetaCorr3Hits");colours.push_back(TColor::GetColor("#ff6600"));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Medium");
   tauDiscriminators.push_back("byTightCombinedIsolationDeltaBetaCorr3Hits"); colours.push_back(TColor::GetColor("#990099"));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Tight");
                           
-//  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwoLT");  colours.push_back(2);
-//  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwoLT");   colours.push_back(3);
-//  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwoLT");  colours.push_back(4);
-//  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwoLT");   colours.push_back(2);
-//  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwoLT");  colours.push_back(3);
-//  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwoLT"); colours.push_back(4);
+//  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwoLT");  colours.push_back(TColor::GetColor(102, 153, 255));markers.push_back(24);dataMarkers.push_back(20);tauDiscriminatorsName.push_back("HPS MVA old woLT VLoose");
+//  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwoLT");   colours.push_back(TColor::GetColor(  0, 153,   0));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS MVA old woLT Loose");
+//  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwoLT");  colours.push_back(TColor::GetColor(255, 102,   0));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS MVA old woLT Medium");
+//  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwoLT");   colours.push_back(TColor::GetColor(153,   0, 153));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS MVA old woLT Tight");
+//  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwoLT");  colours.push_back(TColor::GetColor( 51,  51, 255));markers.push_back(27);dataMarkers.push_back(33);tauDiscriminatorsName.push_back("HPS MVA old woLT VTight");
+//  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwoLT"); colours.push_back(TColor::GetColor(127, 127, 127));markers.push_back(30);dataMarkers.push_back(29);tauDiscriminatorsName.push_back("HPS MVA old woLT VVTight");
 //  
-//  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwLT");   colours.push_back(2);
-//  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwLT");    colours.push_back(3);
-//  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwLT");   colours.push_back(4);
-//  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwLT");    colours.push_back(2);
-//  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwLT");   colours.push_back(3);
-//  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwLT");  colours.push_back(4);
+//  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwLT");   colours.push_back(TColor::GetColor(102, 153, 255));markers.push_back(24);dataMarkers.push_back(20);tauDiscriminatorsName.push_back("HPS MVA old wLT VLoose"); 
+//  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwLT");    colours.push_back(TColor::GetColor(  0, 153,   0));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS MVA old wLT Loose");   
+//  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwLT");   colours.push_back(TColor::GetColor(255, 102,   0));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS MVA old wLT Medium"); 
+//  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwLT");    colours.push_back(TColor::GetColor(153,   0, 153));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS MVA old wLT Tight");  
+//  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwLT");   colours.push_back(TColor::GetColor( 51,  51, 255));markers.push_back(27);dataMarkers.push_back(33);tauDiscriminatorsName.push_back("HPS MVA old wLT VTight");  
+//  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwLT");  colours.push_back(TColor::GetColor(127, 127, 127));markers.push_back(30);dataMarkers.push_back(29);tauDiscriminatorsName.push_back("HPS MVA old wLT VVTight");
 //  
-//  tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwoLT");  colours.push_back(2);
-//  tauDiscriminators.push_back("byLooseIsolationMVA3newDMwoLT");   colours.push_back(3);
-//  tauDiscriminators.push_back("byMediumIsolationMVA3newDMwoLT");  colours.push_back(4);
-//  tauDiscriminators.push_back("byTightIsolationMVA3newDMwoLT");   colours.push_back(2);
-//  tauDiscriminators.push_back("byVTightIsolationMVA3newDMwoLT");  colours.push_back(3);
-//  tauDiscriminators.push_back("byVVTightIsolationMVA3newDMwoLT"); colours.push_back(4);
+//  tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwoLT");  colours.push_back(TColor::GetColor(102, 153, 255));markers.push_back(24);dataMarkers.push_back(20);tauDiscriminatorsName.push_back("HPS MVA new woLT VLoose"); 
+//  tauDiscriminators.push_back("byLooseIsolationMVA3newDMwoLT");   colours.push_back(TColor::GetColor(  0, 153,   0));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS MVA new woLT Loose");   
+//  tauDiscriminators.push_back("byMediumIsolationMVA3newDMwoLT");  colours.push_back(TColor::GetColor(255, 102,   0));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS MVA new woLT Medium"); 
+//  tauDiscriminators.push_back("byTightIsolationMVA3newDMwoLT");   colours.push_back(TColor::GetColor(153,   0, 153));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS MVA new woLT Tight");  
+//  tauDiscriminators.push_back("byVTightIsolationMVA3newDMwoLT");  colours.push_back(TColor::GetColor( 51,  51, 255));markers.push_back(27);dataMarkers.push_back(33);tauDiscriminatorsName.push_back("HPS MVA new woLT VTight");  
+//  tauDiscriminators.push_back("byVVTightIsolationMVA3newDMwoLT"); colours.push_back(TColor::GetColor(127, 127, 127));markers.push_back(30);dataMarkers.push_back(29);tauDiscriminatorsName.push_back("HPS MVA new woLT VVTight");
 //  
-//  tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwLT");   colours.push_back(2);
-//  tauDiscriminators.push_back("byLooseIsolationMVA3newDMwLT");    colours.push_back(3);
-//  tauDiscriminators.push_back("byMediumIsolationMVA3newDMwLT");   colours.push_back(4);
-//  tauDiscriminators.push_back("byTightIsolationMVA3newDMwLT");    colours.push_back(2);
-//  tauDiscriminators.push_back("byVTightIsolationMVA3newDMwLT");   colours.push_back(3);
-//  tauDiscriminators.push_back("byVVTightIsolationMVA3newDMwLT");  colours.push_back(4);
+//  tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwLT");   colours.push_back(TColor::GetColor(102, 153, 255));markers.push_back(24);dataMarkers.push_back(20);tauDiscriminatorsName.push_back("HPS MVA new wLT VLoose"); 
+//  tauDiscriminators.push_back("byLooseIsolationMVA3newDMwLT");    colours.push_back(TColor::GetColor(  0, 153,   0));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS MVA new wLT Loose");   
+//  tauDiscriminators.push_back("byMediumIsolationMVA3newDMwLT");   colours.push_back(TColor::GetColor(255, 102,   0));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS MVA new wLT Medium"); 
+//  tauDiscriminators.push_back("byTightIsolationMVA3newDMwLT");    colours.push_back(TColor::GetColor(153,   0, 153));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS MVA new wLT Tight");  
+//  tauDiscriminators.push_back("byVTightIsolationMVA3newDMwLT");   colours.push_back(TColor::GetColor( 51,  51, 255));markers.push_back(27);dataMarkers.push_back(33);tauDiscriminatorsName.push_back("HPS MVA new wLT VTight");  
+//  tauDiscriminators.push_back("byVVTightIsolationMVA3newDMwLT");  colours.push_back(TColor::GetColor(127, 127, 127));markers.push_back(30);dataMarkers.push_back(29);tauDiscriminatorsName.push_back("HPS MVA new wLT VVTight");
 
   for(vector<TString>::iterator anal=analyses.begin(); anal!=analyses.end(); ++anal)
     {
@@ -295,6 +295,8 @@ void plotFR(){
           gPad->SetLogy();
           for(size_t l=0; l<tauDiscriminators.size(); ++l)
             {
+              radius_numerator[l]->GetXaxis()->SetRangeUser(0.,0.29);
+              data_radius_numerator[l]->GetXaxis()->SetRangeUser(0.,0.29);
               l==0 ? radius_numerator[l]->Draw("") : radius_numerator[l]->Draw("same");
               if(i>0)data_radius_numerator[l]->Draw("same");
             }
