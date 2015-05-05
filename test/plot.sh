@@ -5,7 +5,7 @@ mkdir -p ${DIR}
 rm -rf ${DIR}*
 cp ~/www/HIG-13-026/index.php ${DIR}
 
-LUMI=1000
+LUMI=7318
 JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
 JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
 INDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results/
