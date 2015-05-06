@@ -726,7 +726,7 @@ int main (int argc, char *argv[])
         // At least one event vertex
         bool passVtxSelection(vtx.size()>0); // Ask someone about the offlineSkimmedPrimaryVertices collection
         // One lepton
-        bool passLeptonSelection(selLeptons.size()==1); 
+        bool passLeptonSelection(selLeptons.size()==1 && nVetoLeptons==0); 
         if(passLeptonSelection) passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
         // Transverse mass
         double mt(0.);
