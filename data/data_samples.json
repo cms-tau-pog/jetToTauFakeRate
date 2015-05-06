@@ -1,0 +1,31 @@
+{
+  "proc":[
+    {   
+      "tag":"JetHT data",
+      "isdata":true,
+      "color":1,
+      "fill":0,
+      "marker":20,
+      "destination":"qcd selection",
+      "comment":"real split 13",
+      "data":[
+        { "dtag":"Data13TeV_JetHT"                            , "split":20, "xsec":1.0       , "br":[ 1.0 ]                 , "dset":"/JetHT/CMSSW_7_4_0_pre9_ROOT6-GR_R_74_V8_1Apr_RelVal_jht2012D-v1/MINIAOD"}
+      ]
+    },
+    { 
+      "tag":"SingleMu data",
+      "isdata":true,
+      "color":1,
+      "fill":0,
+      "destination":"wjets selection",
+      "comment":"real split 17",
+      "data":[        
+            { "dtag":"Data13TeV_SingleMu", "split":20, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMu/CMSSW_7_4_0_pre9_ROOT6-GR_R_74_V8A_RelVal_mu2012D-v1/MINIAOD"}
+            ]             
+    }       
+  ]
+}
+
+
+
+
