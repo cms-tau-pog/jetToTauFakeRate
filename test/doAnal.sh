@@ -35,12 +35,14 @@ elif [ "${1}" = "plot" ]; then
     cp ~/www/HIG-13-026/index.php ${DIR}
     
     LUMIWJETS=700
+    # should be 470
     LUMIQCD=4
+    # should be 309
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
     JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
     INDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results/
-    PLOTTERWJETS=${INDIR}plotter_wjet.root
-    PLOTTERQCD=${INDIR}plotter_qcd.root
+    PLOTTERWJETS=${DIR}plotter_wjet.root
+    PLOTTERQCD=${DIR}plotter_qcd.root
     ONLYWJETS="--onlyStartsWith wjet"
     ONLYQCD="--onlyStartsWith qcd"
     
