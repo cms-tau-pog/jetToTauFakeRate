@@ -20,7 +20,7 @@ elif [ "${1}" = "lumi" ]; then
     JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
     OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_lumi
     # cleanup (comment it out if you have smaller jsons for running only on a few sets while the others are OK
-    rm -r ${OUTDIR}
+    # rm -r ${OUTDIR}
     # recreate
     mkdir -p ${OUTDIR}
     runLocalAnalysisOverSamples.py -e extractLumiJSON -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh

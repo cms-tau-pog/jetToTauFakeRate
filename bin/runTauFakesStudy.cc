@@ -239,12 +239,16 @@ int main (int argc, char *argv[])
       TString icat(controlCats[k]);
 
       mon.addHistogram(new TH1D(icat+"pt_denominator", ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
+      mon.addHistogram(new TH1D(icat+"met_denominator", ";E_{T}^{miss};Events", 50, 0., 500.)); // Variable number of bins to be implemented
+      mon.addHistogram(new TH1D(icat+"recomet_denominator", ";E_{T}^{miss};Events", 50, 0., 500.)); // Variable number of bins to be implemented
       mon.addHistogram(new TH1D(icat+"eta_denominator", ";#eta_{jet};Events", 25, -2.5, 2.5));
       mon.addHistogram(new TH1D(icat+"radius_denominator", ";R_{jet};Events", 20, 0., 1.));
       mon.addHistogram(new TH1D(icat+"nvtx_denominator", ";N_{vtx};Events", 30, 0., 60.));        
       for(size_t l=0; l<tauDiscriminators.size(); ++l){
         TString tcat(tauDiscriminators[l]);
         mon.addHistogram(new TH1D(icat+tcat+"pt_numerator",   ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
+        mon.addHistogram(new TH1D(icat+tcat+"met_numerator",   ";E_{T}^{miss};Events", 50, 0., 500.)); // Variable number of bins to be implemented
+        mon.addHistogram(new TH1D(icat+tcat+"recomet_numerator",   ";E_{T}^{miss};Events", 50, 0., 500.)); // Variable number of bins to be implemented
         mon.addHistogram(new TH1D(icat+tcat+"eta_numerator",   ";#eta_{jet};Events", 25, -2.5, 2.5));
         mon.addHistogram(new TH1D(icat+tcat+"radius_numerator",   ";R_{jet};Events", 20, 0., 1.));
         mon.addHistogram(new TH1D(icat+tcat+"nvtx_numerator",   ";N_{vtx};Events", 30, 0., 60.));
@@ -765,10 +769,12 @@ int main (int argc, char *argv[])
               
               double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
               
-              mon.fillHisto(icat+"pt_denominator",     wjetTags, jet->pt() , weight); // Variable number of bins to be implemented
-              mon.fillHisto(icat+"eta_denominator",    wjetTags, jet->eta(), weight);
-              mon.fillHisto(icat+"radius_denominator", wjetTags, jetWidth  , weight);
-              mon.fillHisto(icat+"nvtx_denominator",   wjetTags, vtx.size(), weight);
+              mon.fillHisto(icat+"pt_denominator",      wjetTags, jet->pt()   , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"met_denominator",     wjetTags, met.pt()    , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"recomet_denominator", wjetTags, recoMET.pt(), weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_denominator",     wjetTags, jet->eta()  , weight);
+              mon.fillHisto(icat+"radius_denominator",  wjetTags, jetWidth    , weight);
+              mon.fillHisto(icat+"nvtx_denominator",    wjetTags, vtx.size()  , weight);
 
               // This must be repeated for each discriminator
               for(size_t l=0; l<tauDiscriminators.size(); ++l){
@@ -785,10 +791,12 @@ int main (int argc, char *argv[])
                   }
                 if(minDRtj>0.4) continue;
                 if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
-                mon.fillHisto(icat+tcat+"pt_numerator",       wjetTags, jet->pt() , weight); // Variable number of bins to be implemented
-                mon.fillHisto(icat+tcat+"eta_numerator",      wjetTags, jet->eta(), weight);
-                mon.fillHisto(icat+tcat+"radius_numerator",   wjetTags, jetWidth  , weight);
-                mon.fillHisto(icat+tcat+"nvtx_numerator",     wjetTags, vtx.size(), weight);
+                mon.fillHisto(icat+tcat+"pt_numerator",       wjetTags, jet->pt()   , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"met_numerator",      wjetTags, met.pt()    , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"recomet_numerator",  wjetTags, recoMET.pt(), weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"eta_numerator",      wjetTags, jet->eta()  , weight);
+                mon.fillHisto(icat+tcat+"radius_numerator",   wjetTags, jetWidth    , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",     wjetTags, vtx.size()  , weight);
               }
             }
 
@@ -890,10 +898,12 @@ int main (int argc, char *argv[])
               
               double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
               
-              mon.fillHisto(icat+"pt_denominator",     qcdTags, jet->pt() , weight); // Variable number of bins to be implemented
-              mon.fillHisto(icat+"eta_denominator",    qcdTags, jet->eta(), weight);
-              mon.fillHisto(icat+"radius_denominator", qcdTags, jetWidth  , weight);
-              mon.fillHisto(icat+"nvtx_denominator",   qcdTags, vtx.size(), weight);
+              mon.fillHisto(icat+"pt_denominator",      qcdTags, jet->pt()   , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"met_denominator",     qcdTags, met.pt()    , weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"recomet_denominator", qcdTags, recoMET.pt(), weight); // Variable number of bins to be implemented
+              mon.fillHisto(icat+"eta_denominator",     qcdTags, jet->eta()  , weight);
+              mon.fillHisto(icat+"radius_denominator",  qcdTags, jetWidth    , weight);
+              mon.fillHisto(icat+"nvtx_denominator",    qcdTags, vtx.size()  , weight);
               
               // This must be repeated for each discriminator
               for(size_t l=0; l<tauDiscriminators.size(); ++l){
@@ -909,10 +919,12 @@ int main (int argc, char *argv[])
                   }
                 if(minDRtj>0.4) continue;
                 if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
-                mon.fillHisto(icat+tcat+"pt_numerator",       qcdTags, jet->pt() , weight); // Variable number of bins to be implemented
-                mon.fillHisto(icat+tcat+"eta_numerator",      qcdTags, jet->eta(), weight);
-                mon.fillHisto(icat+tcat+"radius_numerator",   qcdTags, jetWidth  , weight);
-                mon.fillHisto(icat+tcat+"nvtx_numerator",     qcdTags, vtx.size(), weight);
+                mon.fillHisto(icat+tcat+"pt_numerator",      qcdTags, jet->pt()    , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"met_numerator",     qcdTags, met.pt()    , weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"recomet_numerator", qcdTags, recoMET.pt(), weight); // Variable number of bins to be implemented
+                mon.fillHisto(icat+tcat+"eta_numerator",     qcdTags, jet->eta()   , weight);
+                mon.fillHisto(icat+tcat+"radius_numerator",  qcdTags, jetWidth     , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",    qcdTags, vtx.size()   , weight);
                 
               }
             }
