@@ -55,7 +55,7 @@ void plotFR(){
     {
       cout << "Anal is " << anal->Data() << endl;
       
-      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes/plotter_")+anal->Data()+TString(".root"));
+      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15/plotter_")+anal->Data()+TString(".root"));
       
       vector<TString> samples; samples.clear();
       TString data("");
@@ -110,7 +110,7 @@ void plotFR(){
           // Denominator is common (independent on tauID)
           if(!pt_denominator)     pt_denominator     = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("pt_denominator"));     else pt_denominator    ->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("pt_denominator")    )); 
           if(!met_denominator)    met_denominator    = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("met_denominator"));    else met_denominator   ->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("met_denominator")    )); 
-          if(!recomet_denominator)pt_denominator     = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("recomet_denominator"));else recomet_denominator->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("recomet_denominator")    )); 
+          if(!recomet_denominator)recomet_denominator     = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("recomet_denominator"));else recomet_denominator->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("recomet_denominator")    )); 
           if(!eta_denominator)    eta_denominator    = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("eta_denominator"));    else eta_denominator   ->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("eta_denominator")   )); 
           if(!radius_denominator) radius_denominator = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("radius_denominator")); else radius_denominator->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("radius_denominator")));
           if(!nvtx_denominator)   nvtx_denominator   = (TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("nvtx_denominator"));   else nvtx_denominator  ->Add((TH1*) f->Get(sample->Data()+TString("/")+anal->Data()+TString("_")+step+TString("nvtx_denominator")  ));   
@@ -336,8 +336,8 @@ void plotFR(){
           leg->Draw("");
           c->Modified();
           c->Update();
-          c->Print(TString("test/results/fakes_pt_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
-          c->Print(TString("test/results/fakes_pt_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Print(TString("test/results_spring15/fakes_pt_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results_spring15/fakes_pt_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
           c->Clear();
           c->cd();
           gPad->SetLogy();
@@ -353,8 +353,8 @@ void plotFR(){
           leg->Draw("");
           c->Modified();
           c->Update();
-          c->Print(TString("test/results/fakes_met_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
-          c->Print(TString("test/results/fakes_met_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Print(TString("test/results_spring15/fakes_met_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results_spring15/fakes_met_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
           c->Clear();
           c->cd();
           gPad->SetLogy();
@@ -370,8 +370,8 @@ void plotFR(){
           leg->Draw("");
           c->Modified();
           c->Update();
-          c->Print(TString("test/results/fakes_recomet_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
-          c->Print(TString("test/results/fakes_recomet_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Print(TString("test/results_spring15/fakes_recomet_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results_spring15/fakes_recomet_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
           c->Clear();
           c->cd();
           gPad->SetLogy();
@@ -384,8 +384,8 @@ void plotFR(){
           leg->Draw("");
           c->Modified();
           c->Update();
-          c->Print(TString("test/results/fakes_eta_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
-          c->Print(TString("test/results/fakes_eta_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Print(TString("test/results_spring15/fakes_eta_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results_spring15/fakes_eta_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
           c->Clear();
           c->cd();
           gPad->SetLogy();
@@ -400,8 +400,8 @@ void plotFR(){
           leg->Draw("");
           c->Modified();
           c->Update();
-          c->Print(TString("test/results/fakes_radius_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
-          c->Print(TString("test/results/fakes_radius_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Print(TString("test/results_spring15/fakes_radius_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results_spring15/fakes_radius_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
           c->Clear();
           c->cd();
           gPad->SetLogy();
@@ -414,8 +414,8 @@ void plotFR(){
           leg->Draw("");
           c->Modified();
           c->Update();
-          c->Print(TString("test/results/fakes_nvtx_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
-          c->Print(TString("test/results/fakes_nvtx_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
+          c->Print(TString("test/results_spring15/fakes_nvtx_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".pdf"));
+          c->Print(TString("test/results_spring15/fakes_nvtx_")+(i>0?TString("data_"):TString(""))+anal->Data()+TString(".png"));
         } 
     }
   
