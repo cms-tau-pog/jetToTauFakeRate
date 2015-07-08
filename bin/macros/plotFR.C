@@ -1,7 +1,7 @@
 void plotFR(){
 
   // FIXME: Configurable vector of strings for the name of the variables.
-
+  bool doData(false);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
@@ -56,6 +56,7 @@ void plotFR(){
       cout << "Anal is " << anal->Data() << endl;
       
       TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15/plotter_")+anal->Data()+TString(".root"));
+      cout << "Opened file " << "~/www/13TeV_tauFakes_spring15/plotter_" << anal->Data() << ".root" << endl;
       
       vector<TString> samples; samples.clear();
       TString data("");
@@ -66,14 +67,14 @@ void plotFR(){
           samples.push_back("W,multijets");
           samples.push_back("QCDMuEnriched");
           samples.push_back("t#bar{t}");
-          data = "SingleMu data";
+          if(doData) data = "SingleMu data";
           step=TString("step5");
         }
       else if(*anal == "qcd")
         {
           samples.push_back("t#bar{t}");
           samples.push_back("QCD");
-          data = "JetHT data";
+          if(doData) data = "JetHT data";
           step=TString("step3");
         }
       
@@ -117,15 +118,16 @@ void plotFR(){
         }
 
       
-      data_pt_denominator     = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("pt_denominator"));     
-      data_met_denominator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("met_denominator"));     
-      data_recomet_denominator= (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("recomet_denominator"));     
-      data_eta_denominator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("eta_denominator"));    
-      data_radius_denominator = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("radius_denominator")); 
-      data_nvtx_denominator   = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("nvtx_denominator"));   
+      if(doData)
+        {
+          data_pt_denominator     = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("pt_denominator"));     
+          data_met_denominator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("met_denominator"));     
+          data_recomet_denominator= (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("recomet_denominator"));     
+          data_eta_denominator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("eta_denominator"));    
+          data_radius_denominator = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("radius_denominator")); 
+          data_nvtx_denominator   = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+TString("nvtx_denominator"));   
+        }
       
-
-
       for(size_t l=0; l<tauDiscriminators.size(); ++l)
         {
           TString tcat(tauDiscriminators[l]);
@@ -190,43 +192,45 @@ void plotFR(){
           nvtx_numerator  .push_back(temp_nvtx_numerator  );
 
           // Data
-          data_temp_pt_numerator     = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("pt_numerator"));
-          data_temp_met_numerator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("met_numerator"));
-          data_temp_recomet_numerator= (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("recomet_numerator"));
-          cout << data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("pt_numerator") << endl;
-          data_temp_eta_numerator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("eta_numerator"));
-          data_temp_radius_numerator = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("radius_numerator"));
-          data_temp_nvtx_numerator   = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("nvtx_numerator"));
-
-          data_temp_pt_numerator    ->Sumw2();          
-          data_temp_met_numerator    ->Sumw2();          
-          data_temp_recomet_numerator    ->Sumw2();          
-          data_temp_eta_numerator   ->Sumw2();
-          data_temp_radius_numerator->Sumw2();
-          data_temp_nvtx_numerator  ->Sumw2();
-          
-          cout << "Now rebinniing" << endl;
-          TH1* data_temp_ptbinned = data_temp_pt_numerator    ->Rebin(19, "", ptbins);          
-          data_temp_pt_numerator=data_temp_ptbinned;
-          //data_temp_eta_numerator   ->Rebin(2);
-          //data_temp_radius_numerator->Rebin(2);
-          //data_temp_nvtx_numerator  ->Rebin(2);
-          
-          cout << "rebinned " << endl;
-          data_temp_pt_numerator    ->SetMarkerColor(colours[l]);data_temp_pt_numerator    ->SetLineColor(colours[l]);data_temp_pt_numerator    ->SetLineWidth(2);data_temp_pt_numerator    ->SetMarkerStyle(dataMarkers[l]);data_temp_pt_numerator    ->SetMarkerSize(1.5);
-          data_temp_met_numerator    ->SetMarkerColor(colours[l]);data_temp_met_numerator    ->SetLineColor(colours[l]);data_temp_met_numerator    ->SetLineWidth(2);data_temp_met_numerator    ->SetMarkerStyle(dataMarkers[l]);data_temp_met_numerator    ->SetMarkerSize(1.5);
-          data_temp_recomet_numerator->SetMarkerColor(colours[l]);data_temp_recomet_numerator->SetLineColor(colours[l]);data_temp_recomet_numerator->SetLineWidth(2);data_temp_recomet_numerator->SetMarkerStyle(dataMarkers[l]);data_temp_recomet_numerator    ->SetMarkerSize(1.5);
-          data_temp_eta_numerator   ->SetMarkerColor(colours[l]);data_temp_eta_numerator   ->SetLineColor(colours[l]);data_temp_eta_numerator   ->SetLineWidth(2);data_temp_eta_numerator   ->SetMarkerStyle(dataMarkers[l]);data_temp_eta_numerator   ->SetMarkerSize(1.5);
-          data_temp_radius_numerator->SetMarkerColor(colours[l]);data_temp_radius_numerator->SetLineColor(colours[l]);data_temp_radius_numerator->SetLineWidth(2);data_temp_radius_numerator->SetMarkerStyle(dataMarkers[l]);data_temp_radius_numerator->SetMarkerSize(1.5);
-          data_temp_nvtx_numerator  ->SetMarkerColor(colours[l]);data_temp_nvtx_numerator  ->SetLineColor(colours[l]);data_temp_nvtx_numerator  ->SetLineWidth(2);data_temp_nvtx_numerator  ->SetMarkerStyle(dataMarkers[l]);data_temp_nvtx_numerator  ->SetMarkerSize(1.5);
-          
-          data_pt_numerator    .push_back(data_temp_pt_numerator    );
-          data_met_numerator    .push_back(data_temp_met_numerator    );
-          data_recomet_numerator.push_back(data_temp_recomet_numerator    );
-          data_eta_numerator   .push_back(data_temp_eta_numerator   );
-          data_radius_numerator.push_back(data_temp_radius_numerator);
-          data_nvtx_numerator  .push_back(data_temp_nvtx_numerator  );
-
+          if(doData)
+            {
+              data_temp_pt_numerator     = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("pt_numerator"));
+              data_temp_met_numerator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("met_numerator"));
+              data_temp_recomet_numerator= (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("recomet_numerator"));
+              cout << data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("pt_numerator") << endl;
+              data_temp_eta_numerator    = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("eta_numerator"));
+              data_temp_radius_numerator = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("radius_numerator"));
+              data_temp_nvtx_numerator   = (TH1*) f->Get(data+TString("/")+anal->Data()+TString("_")+step+tcat+TString("nvtx_numerator"));
+              
+              data_temp_pt_numerator    ->Sumw2();          
+              data_temp_met_numerator    ->Sumw2();          
+              data_temp_recomet_numerator    ->Sumw2();          
+              data_temp_eta_numerator   ->Sumw2();
+              data_temp_radius_numerator->Sumw2();
+              data_temp_nvtx_numerator  ->Sumw2();
+              
+              cout << "Now rebinniing" << endl;
+              TH1* data_temp_ptbinned = data_temp_pt_numerator    ->Rebin(19, "", ptbins);          
+              data_temp_pt_numerator=data_temp_ptbinned;
+              //data_temp_eta_numerator   ->Rebin(2);
+              //data_temp_radius_numerator->Rebin(2);
+              //data_temp_nvtx_numerator  ->Rebin(2);
+              
+              cout << "rebinned " << endl;
+              data_temp_pt_numerator    ->SetMarkerColor(colours[l]);data_temp_pt_numerator    ->SetLineColor(colours[l]);data_temp_pt_numerator    ->SetLineWidth(2);data_temp_pt_numerator    ->SetMarkerStyle(dataMarkers[l]);data_temp_pt_numerator    ->SetMarkerSize(1.5);
+              data_temp_met_numerator    ->SetMarkerColor(colours[l]);data_temp_met_numerator    ->SetLineColor(colours[l]);data_temp_met_numerator    ->SetLineWidth(2);data_temp_met_numerator    ->SetMarkerStyle(dataMarkers[l]);data_temp_met_numerator    ->SetMarkerSize(1.5);
+              data_temp_recomet_numerator->SetMarkerColor(colours[l]);data_temp_recomet_numerator->SetLineColor(colours[l]);data_temp_recomet_numerator->SetLineWidth(2);data_temp_recomet_numerator->SetMarkerStyle(dataMarkers[l]);data_temp_recomet_numerator    ->SetMarkerSize(1.5);
+              data_temp_eta_numerator   ->SetMarkerColor(colours[l]);data_temp_eta_numerator   ->SetLineColor(colours[l]);data_temp_eta_numerator   ->SetLineWidth(2);data_temp_eta_numerator   ->SetMarkerStyle(dataMarkers[l]);data_temp_eta_numerator   ->SetMarkerSize(1.5);
+              data_temp_radius_numerator->SetMarkerColor(colours[l]);data_temp_radius_numerator->SetLineColor(colours[l]);data_temp_radius_numerator->SetLineWidth(2);data_temp_radius_numerator->SetMarkerStyle(dataMarkers[l]);data_temp_radius_numerator->SetMarkerSize(1.5);
+              data_temp_nvtx_numerator  ->SetMarkerColor(colours[l]);data_temp_nvtx_numerator  ->SetLineColor(colours[l]);data_temp_nvtx_numerator  ->SetLineWidth(2);data_temp_nvtx_numerator  ->SetMarkerStyle(dataMarkers[l]);data_temp_nvtx_numerator  ->SetMarkerSize(1.5);
+              
+              data_pt_numerator    .push_back(data_temp_pt_numerator    );
+              data_met_numerator    .push_back(data_temp_met_numerator    );
+              data_recomet_numerator.push_back(data_temp_recomet_numerator    );
+              data_eta_numerator   .push_back(data_temp_eta_numerator   );
+              data_radius_numerator.push_back(data_temp_radius_numerator);
+              data_nvtx_numerator  .push_back(data_temp_nvtx_numerator  );
+            }
         }
       cout << "Done." << endl;
       
@@ -250,12 +254,16 @@ void plotFR(){
       //radius_denominator->Rebin(2);
       //nvtx_denominator  ->Rebin(2);      
 
-      TH1* data_pt_binned = data_pt_denominator    ->Rebin(19, "", ptbins);
-      data_pt_denominator=data_pt_binned;
-      //data_eta_denominator   ->Rebin(2);
-      //data_radius_denominator->Rebin(2);
-      //data_nvtx_denominator  ->Rebin(2);      
-
+      TH1* data_pt_binned = NULL;
+      if(doData)
+        {
+          data_pt_binned = data_pt_denominator    ->Rebin(19, "", ptbins);
+          data_pt_denominator=data_pt_binned;
+          //data_eta_denominator   ->Rebin(2);
+          //data_radius_denominator->Rebin(2);
+          //data_nvtx_denominator  ->Rebin(2);      
+        }
+      
       for(size_t l=0; l<tauDiscriminators.size(); ++l)
         {
           pt_numerator    [l]->Divide( pt_denominator     );
@@ -264,7 +272,7 @@ void plotFR(){
           eta_numerator   [l]->Divide( eta_denominator    );
           radius_numerator[l]->Divide( radius_denominator );
           nvtx_numerator  [l]->Divide( nvtx_denominator   );
-
+          
           pt_numerator    [l]->GetYaxis()->SetTitle("Fake rate");
           met_numerator    [l]->GetYaxis()->SetTitle("Fake rate");
           recomet_numerator[l]->GetYaxis()->SetTitle("Fake rate");
@@ -291,15 +299,17 @@ void plotFR(){
           radius_numerator[l]->SetMinimum(0.0001);
           nvtx_numerator  [l]->SetMinimum(0.0001);
           
-
-          data_pt_numerator    [l]->Divide( data_pt_denominator     );
-          data_met_numerator    [l]->Divide( data_met_denominator     );
-          data_recomet_numerator[l]->Divide( data_recomet_denominator     );
-          data_eta_numerator   [l]->Divide( data_eta_denominator    );
-          data_radius_numerator[l]->Divide( data_radius_denominator );
-          data_nvtx_numerator  [l]->Divide( data_nvtx_denominator   );
+          if(doData)
+            {
+              data_pt_numerator    [l]->Divide( data_pt_denominator     );
+              data_met_numerator    [l]->Divide( data_met_denominator     );
+              data_recomet_numerator[l]->Divide( data_recomet_denominator     );
+              data_eta_numerator   [l]->Divide( data_eta_denominator    );
+              data_radius_numerator[l]->Divide( data_radius_denominator );
+              data_nvtx_numerator  [l]->Divide( data_nvtx_denominator   );
+            }
         }
-
+      
       TLegend* leg = new TLegend(0.5, 0.75, 0.89, 0.9);
       TLegendEntry* le = NULL;
       for(size_t l=0; l<tauDiscriminators.size(); ++l){
@@ -328,9 +338,9 @@ void plotFR(){
             {
               pt_numerator[l]->GetXaxis()->SetNdivisions(509,true);
               pt_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
-              data_pt_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
+              if(doData) data_pt_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
               l==0 ? pt_numerator[l]->Draw("") : pt_numerator[l]->Draw("same");
-              if(i>0) data_pt_numerator[l]->Draw("same");
+              if(i>0 && doData) data_pt_numerator[l]->Draw("same");
             }
           //t->Draw("");
           leg->Draw("");
@@ -345,9 +355,9 @@ void plotFR(){
             {
               met_numerator[l]->GetXaxis()->SetNdivisions(509,true);
               met_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
-              data_met_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
+              if(doData) data_met_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
               l==0 ? met_numerator[l]->Draw("") : met_numerator[l]->Draw("same");
-              if(i>0) data_met_numerator[l]->Draw("same");
+              if(i>0 && doData) data_met_numerator[l]->Draw("same");
             }
           //t->Draw("");
           leg->Draw("");
@@ -362,9 +372,9 @@ void plotFR(){
             {
               recomet_numerator[l]->GetXaxis()->SetNdivisions(509,true);
               recomet_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
-              data_recomet_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
+              if(doData) data_recomet_numerator[l]->GetXaxis()->SetRangeUser(20.,499.9);
               l==0 ? recomet_numerator[l]->Draw("") : recomet_numerator[l]->Draw("same");
-              if(i>0) data_recomet_numerator[l]->Draw("same");
+              if(i>0 && doData) data_recomet_numerator[l]->Draw("same");
             }
           //t->Draw("");
           leg->Draw("");
@@ -378,7 +388,7 @@ void plotFR(){
           for(size_t l=0; l<tauDiscriminators.size(); ++l)
             {
               l==0 ? eta_numerator[l]->Draw("") : eta_numerator[l]->Draw("same");
-              if(i>0)data_eta_numerator[l]->Draw("same");
+              if(i>0 && doData)data_eta_numerator[l]->Draw("same");
             }
           //t->Draw("");
           leg->Draw("");
@@ -392,9 +402,9 @@ void plotFR(){
           for(size_t l=0; l<tauDiscriminators.size(); ++l)
             {
               radius_numerator[l]->GetXaxis()->SetRangeUser(0.,0.29);
-              data_radius_numerator[l]->GetXaxis()->SetRangeUser(0.,0.29);
+              if(doData) data_radius_numerator[l]->GetXaxis()->SetRangeUser(0.,0.29);
               l==0 ? radius_numerator[l]->Draw("") : radius_numerator[l]->Draw("same");
-              if(i>0)data_radius_numerator[l]->Draw("same");
+              if(i>0 && doData)data_radius_numerator[l]->Draw("same");
             }
           //t->Draw("");
           leg->Draw("");
@@ -408,7 +418,7 @@ void plotFR(){
           for(size_t l=0; l<tauDiscriminators.size(); ++l)
             {
               l==0 ? nvtx_numerator[l]->Draw("") : nvtx_numerator[l]->Draw("same");
-              if(i>0)data_nvtx_numerator[l]->Draw("same");
+              if(i>0 && doData)data_nvtx_numerator[l]->Draw("same");
             }
           //t->Draw(""); 
           leg->Draw("");
