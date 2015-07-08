@@ -369,22 +369,23 @@ int main (int argc, char *argv[])
       if (!tr.isValid ())
         return false;
 
-      /*
-        if(iev <100 && iev >95)
-        {
-        cout << "AVAILABLE TRIGGER BITS" << endl;
-        //std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_*Jet*");
-        std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_IsoMu*");
-          for(size_t t=0;t<matches.size();t++)
-          cout << "\t\t\t" << matches[t]->c_str() << endl;
-          }
-      */
       
+//if(iev <100 && iev >95)
+//  {
+//  cout << "AVAILABLE TRIGGER BITS" << endl;
+//  //std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_*Jet*");
+//  std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_PFJet*");
+//    for(size_t t=0;t<matches.size();t++)
+//    cout << "\t\t\t" << matches[t]->c_str() << endl;
+//  }
+//  
+//
       //      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*")); // It is unprescaled
       // Turns out that the only single jet trigger available for those samples is HLT_PFJet260, which has L1 prescale =1 but HLT prescale=170.
       bool jetTrigger  (utils::passTriggerPatterns(tr, "HLT_PFJet260_v*"));
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*", "HLT_IsoMu24_v*"));
+      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*"));
       
+
       if (filterOnlyJETHT)    {                     muTrigger = false; }
       if (filterOnlySINGLEMU) { jetTrigger = false;                    }
       
