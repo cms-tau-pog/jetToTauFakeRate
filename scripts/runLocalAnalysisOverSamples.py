@@ -17,6 +17,15 @@ def getByLabel(desc,key,defaultVal=None) :
         return defaultVal
 
 
+
+######################### Stuff needed for getting the filelist while DAS is still fucked up
+# cURL command: please leave the space after GET
+curlCommand="export X509_USER_PROXY=~/x509_user_proxy/proxy; curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
+dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
+# Remove various residual characters from the filename lines, then remove all the lines not constituted by a filename (=not containing the "store" path)
+sedTheList=' | sed \"s#logical_file_name#\\nlogical_file_name#g\" | sed \"s#logical_file_name\': \'##g\" | sed \"s#\'}, {u\'##g\" | sed \"s#\'}]##g\" | grep store '
+#########################
+
 #configure
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
@@ -95,21 +104,24 @@ for proc in procList :
 
                list = []
                if(localTier in listSites and "CERN" in localTier):
-                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
-                  for i in range(0,len(list)): list[i] = "root://eoscms//eos/cms"+list[i]
+                   #list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                   list = commands.getstatusoutput(curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(d,'dset','')+'"'+sedTheList)[1].split()               
+                   for i in range(0,len(list)): list[i] = "root://eoscms//eos/cms"+list[i]
                elif(len(getByLabel(d,'miniAOD',''))>0):
                   list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);                  
                elif("/MINIAODSIM" in getByLabel(d,'dset','')):
 
                   if(not kInitDone):
                      print "You are going to run on a sample over grid using the AAA protocol, it is therefore needed to initialize your grid certificate"
-                     os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init -voms cms -valid 192:00 --out ~/x509_user_proxy/proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-                     initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/proxy;voms-proxy-init --noregen;'
+                     os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
+                     #initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/proxy;voms-proxy-init --noregen;'
+                     initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/proxy;'
                      kInitDone = True
 
 
                   print("Use das_client.py to list files from : " + getByLabel(d,'dset','') )
-                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                  #list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                  list = commands.getstatusoutput(curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(d,'dset','')+'"'+sedTheList)[1].split()
                   for i in range(0,len(list)): list[i] = "root://cms-xrd-global.cern.ch/"+list[i]
                else:
                   list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);
