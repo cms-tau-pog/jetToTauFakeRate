@@ -5,8 +5,8 @@
 # 1: run the analysis (must merge submit script here)
 
 if [ "${1}" = "submit" ]; then
-    JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
-    #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
+    #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+    JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json
     OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
 
     # cleanup (comment it out if you have smaller jsons for running only on a few sets while the others are OK
@@ -50,8 +50,10 @@ elif [ "${1}" = "plot" ]; then
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
     runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .png ${ONLYWJETS}
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf ${ONLYWJETS}
     # QCD
     runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .png ${ONLYQCD}
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf ${ONLYQCD}
  
     # Now run test/harvest.sh by hand please
     # root -l -b bin/macros/plotFR.C  and sh set.sh. Currently coding this step into runFakeRate.cc
