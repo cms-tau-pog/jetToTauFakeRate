@@ -1,10 +1,12 @@
 void plotFR(){
 
   // FIXME: Configurable vector of strings for the name of the variables.
-  bool doData(false);
+  bool doData(true);
 
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
+
+  TH1::SetDefaultSumw2();
   
   vector<TString> analyses; analyses.clear();
   analyses.push_back("wjet");
@@ -19,14 +21,14 @@ void plotFR(){
   vector<TString> tauDiscriminators; tauDiscriminators.clear();
   vector<TString> tauDiscriminatorsName; tauDiscriminatorsName.clear();
 
-  tauDiscriminators.push_back("byLooseCombinedIsolationDeltaBetaCorr3Hits"); colours.push_back(TColor::GetColor("#009900"));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Loose");
-  tauDiscriminators.push_back("byMediumCombinedIsolationDeltaBetaCorr3Hits");colours.push_back(TColor::GetColor("#ff6600"));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Medium");
-  tauDiscriminators.push_back("byTightCombinedIsolationDeltaBetaCorr3Hits"); colours.push_back(TColor::GetColor("#990099"));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Tight");
+///   tauDiscriminators.push_back("byLooseCombinedIsolationDeltaBetaCorr3Hits"); colours.push_back(TColor::GetColor("#009900"));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Loose");
+///   tauDiscriminators.push_back("byMediumCombinedIsolationDeltaBetaCorr3Hits");colours.push_back(TColor::GetColor("#ff6600"));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Medium");
+///   tauDiscriminators.push_back("byTightCombinedIsolationDeltaBetaCorr3Hits"); colours.push_back(TColor::GetColor("#990099"));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS #delta#beta 3-hit Tight");
                           
 //  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwoLT");  colours.push_back(TColor::GetColor(102, 153, 255));markers.push_back(24);dataMarkers.push_back(20);tauDiscriminatorsName.push_back("HPS MVA old woLT VLoose");
-//  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwoLT");   colours.push_back(TColor::GetColor(  0, 153,   0));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS MVA old woLT Loose");
-//  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwoLT");  colours.push_back(TColor::GetColor(255, 102,   0));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS MVA old woLT Medium");
-//  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwoLT");   colours.push_back(TColor::GetColor(153,   0, 153));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS MVA old woLT Tight");
+  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwoLT");   colours.push_back(TColor::GetColor(  0, 153,   0));markers.push_back(25);dataMarkers.push_back(21);tauDiscriminatorsName.push_back("HPS MVA old woLT Loose");
+  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwoLT");  colours.push_back(TColor::GetColor(255, 102,   0));markers.push_back(26);dataMarkers.push_back(22);tauDiscriminatorsName.push_back("HPS MVA old woLT Medium");
+  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwoLT");   colours.push_back(TColor::GetColor(153,   0, 153));markers.push_back(32);dataMarkers.push_back(23);tauDiscriminatorsName.push_back("HPS MVA old woLT Tight");
 //  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwoLT");  colours.push_back(TColor::GetColor( 51,  51, 255));markers.push_back(27);dataMarkers.push_back(33);tauDiscriminatorsName.push_back("HPS MVA old woLT VTight");
 //  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwoLT"); colours.push_back(TColor::GetColor(127, 127, 127));markers.push_back(30);dataMarkers.push_back(29);tauDiscriminatorsName.push_back("HPS MVA old woLT VVTight");
 //  
@@ -65,7 +67,7 @@ void plotFR(){
       if(*anal == "wjet")
         {
           samples.push_back("W,multijets");
-          samples.push_back("QCDMuEnriched");
+          //samples.push_back("QCDMuEnriched");
           samples.push_back("t#bar{t}");
           if(doData) data = "SingleMu data";
           step=TString("step5");
@@ -241,13 +243,16 @@ void plotFR(){
       if(!radius_denominator) cout << " radius_denominator is NULL" << endl; else radius_denominator->Sumw2();
       if(!nvtx_denominator  ) cout << " nvtx_denominator   is NULL" << endl; else nvtx_denominator  ->Sumw2();
 
-      if(!data_pt_denominator    ) cout << " pt_denominator     is NULL" << endl; else data_pt_denominator    ->Sumw2();
-      if(!data_met_denominator    ) cout << " met_denominator     is NULL" << endl; else data_met_denominator    ->Sumw2();
-      if(!data_recomet_denominator) cout << " recomet_denominator is NULL" << endl; else data_recomet_denominator    ->Sumw2();
-      if(!data_eta_denominator   ) cout << " eta_denominator    is NULL" << endl; else data_eta_denominator   ->Sumw2();
-      if(!data_radius_denominator) cout << " radius_denominator is NULL" << endl; else data_radius_denominator->Sumw2();
-      if(!data_nvtx_denominator  ) cout << " nvtx_denominator   is NULL" << endl; else data_nvtx_denominator  ->Sumw2();
-
+      if(doData)
+        {
+          if(!data_pt_denominator    ) cout << " pt_denominator     is NULL" << endl; else data_pt_denominator    ->Sumw2();
+          if(!data_met_denominator    ) cout << " met_denominator     is NULL" << endl; else data_met_denominator    ->Sumw2();
+          if(!data_recomet_denominator) cout << " recomet_denominator is NULL" << endl; else data_recomet_denominator    ->Sumw2();
+          if(!data_eta_denominator   ) cout << " eta_denominator    is NULL" << endl; else data_eta_denominator   ->Sumw2();
+          if(!data_radius_denominator) cout << " radius_denominator is NULL" << endl; else data_radius_denominator->Sumw2();
+          if(!data_nvtx_denominator  ) cout << " nvtx_denominator   is NULL" << endl; else data_nvtx_denominator  ->Sumw2();
+        }
+      
       TH1* pt_binned = pt_denominator    ->Rebin(19, "", ptbins);
       pt_denominator=pt_binned;
       //eta_denominator   ->Rebin(2);
@@ -285,13 +290,20 @@ void plotFR(){
           //radius_numerator[l]->SetMaximum(10*radius_numerator[l]->GetBinContent(radius_numerator[l]->GetMaximumBin()));
           //nvtx_numerator  [l]->SetMaximum(100*nvtx_numerator  [l]->GetBinContent(nvtx_numerator  [l]->GetMaximumBin()));
 
+          pt_numerator     [l]->Sumw2();
+          met_numerator    [l]->Sumw2();
+          recomet_numerator[l]->Sumw2();
+          eta_numerator    [l]->Sumw2();
+          radius_numerator [l]->Sumw2();
+          nvtx_numerator   [l]->Sumw2();
+
           pt_numerator    [l]->SetMaximum(1.);
           met_numerator    [l]->SetMaximum(1.);
           recomet_numerator[l]->SetMaximum(1.);
           eta_numerator   [l]->SetMaximum(1.);
           radius_numerator[l]->SetMaximum(1.);
           nvtx_numerator  [l]->SetMaximum(1.);
-
+          
           pt_numerator    [l]->SetMinimum(0.0001);
           met_numerator    [l]->SetMinimum(0.0001);
           recomet_numerator[l]->SetMinimum(0.0001);
@@ -313,7 +325,7 @@ void plotFR(){
       TLegend* leg = new TLegend(0.5, 0.75, 0.89, 0.9);
       TLegendEntry* le = NULL;
       for(size_t l=0; l<tauDiscriminators.size(); ++l){
-        if(tauDiscriminatorsName[l].Contains("Medium"))
+        if(false && tauDiscriminatorsName[l].Contains("Medium"))
           {
             le = leg->AddEntry(pt_numerator[l], tauDiscriminatorsName[l], "pl");
             le->SetTextColor(kRed);
