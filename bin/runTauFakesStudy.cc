@@ -655,16 +655,16 @@ int main (int argc, char *argv[])
           // if (!tau.tauID ("againstMuonTight3"))                           continue;
           // if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
           
-//          // Pixel hits cut (will be available out of the box in new MINIAOD production)
-//          int nChHadPixelHits = 0;
-//          reco::CandidatePtrVector chCands = itau.signalChargedHadrCands();
-//          for(reco::CandidatePtrVector::const_iterator iter = chCands.begin(); iter != chCands.end(); iter++){
-//            pat::PackedCandidate const* packedCand = dynamic_cast<pat::PackedCandidate const*>(iter->get());
-//            int pixelHits = packedCand->numberOfPixelHits();
-//            if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
-//          }
-//          if(nChHadPixelHits==0) continue;
-//          //
+          // Pixel hits cut (will be available out of the box in new MINIAOD production)
+          int nChHadPixelHits = 0;
+          reco::CandidatePtrVector chCands = tau.signalChargedHadrCands();
+          for(reco::CandidatePtrVector::const_iterator iter = chCands.begin(); iter != chCands.end(); iter++){
+            pat::PackedCandidate const* packedCand = dynamic_cast<pat::PackedCandidate const*>(iter->get());
+            int pixelHits = packedCand->numberOfPixelHits();
+            if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
+          }
+          if(nChHadPixelHits==0) continue;
+          //
 
           selTaus.push_back(tau);
         }
