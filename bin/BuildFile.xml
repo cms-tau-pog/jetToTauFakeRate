@@ -18,7 +18,7 @@
 
   <bin name="runTauFakesStudy"            file="runTauFakesStudy.cc"></bin>
 <!--  <bin name="runFakeRate"                 file="runFakeRate.cc"></bin> -->
-  <bin name="runDataComparison"           file="runDataComparison.cc"></bin>
+<!--  <bin name="runDataComparison"           file="runDataComparison.cc"></bin> -->
 
 </environment>
 

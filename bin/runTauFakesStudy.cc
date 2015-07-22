@@ -84,43 +84,46 @@ int main (int argc, char *argv[])
   // configure the process
   const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
-  bool debug = runProcess.getParameter<bool>("debug");
-  bool isMC = runProcess.getParameter < bool > ("isMC");
-  double xsec = runProcess.getParameter < double >("xsec");
-  int mctruthmode = runProcess.getParameter < int >("mctruthmode");
-  
+  bool debug      = runProcess.getParameter<bool>  ("debug");
+  bool isMC       = runProcess.getParameter<bool>  ("isMC");
+  double xsec     = runProcess.getParameter<double>("xsec");
+  int mctruthmode = runProcess.getParameter<int>   ("mctruthmode");
+  TString dtag    = runProcess.getParameter<std::string>("dtag");
+
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getParameter < std::vector < std::string > >("input");
-  TString baseDir = runProcess.getParameter < std::string > ("dirName");
-  TString url = TString (argv[1]);
-  TString outFileUrl (gSystem->BaseName (url));
-  outFileUrl.ReplaceAll ("_cfg.py", "");
-  if (mctruthmode != 0)
-    {
-      outFileUrl += "_filt";
-      outFileUrl += mctruthmode;
-    }
-  TString outdir = runProcess.getParameter < std::string > ("outdir");
-  TString outUrl (outdir);
-  gSystem->Exec ("mkdir -p " + outUrl);
+//  TString baseDir = runProcess.getParameter < std::string > ("dirName");
+//  TString url = TString (argv[1]);
+//  TString outFileUrl (gSystem->BaseName (url));
+//  outFileUrl.ReplaceAll ("_cfg.py", "");
+//  if (mctruthmode != 0)
+//    {
+//      outFileUrl += "_filt";
+//      outFileUrl += mctruthmode;
+//    }
+  TString outUrl = runProcess.getParameter<std::string> ("outfile");
+
+  // Good lumi mask
+  lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
+
   
   bool
     filterOnlyJETHT    (false),
     filterOnlySINGLEMU (false);
   if (!isMC)
     {
-      if (url.Contains ("JetHT"))     filterOnlyJETHT    = true;
-      if (url.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
+      if (dtag.Contains ("JetHT"))     filterOnlyJETHT    = true;
+      if (dtag.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
     }
   
-  bool isSingleMuPD (!isMC && url.Contains ("SingleMu")); // Do I really need this?
-  bool isV0JetsMC (isMC && (url.Contains ("DYJetsToLL_50toInf") || url.Contains ("WJets")));
-  bool isWGmc (isMC && url.Contains ("WG"));
-  bool isZGmc (isMC && url.Contains ("ZG"));
-  bool isMC_ZZ = isMC && (string (url.Data ()).find ("TeV_ZZ") != string::npos);
-  bool isMC_WZ = isMC && (string (url.Data ()).find ("TeV_WZ") != string::npos);
+  bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
+  bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL_50toInf") || dtag.Contains ("WJets")));
+  bool isWGmc       (isMC && dtag.Contains ("WG"));
+  bool isZGmc       (isMC && dtag.Contains ("ZG"));
+  bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
+  bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
   
-  TString outTxtUrl = outUrl + "/" + outFileUrl + ".txt";
+  TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
   if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
   printf ("TextFile URL = %s\n", outTxtUrl.Data ());
@@ -617,7 +620,7 @@ int main (int argc, char *argv[])
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoKin = false;
 
           //Cut based identification 
-          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
           passVetoId = passId;
 
           //isolation
@@ -1076,8 +1079,6 @@ int main (int argc, char *argv[])
   //########     SAVING HISTO TO FILE     ########
   //##############################################
   //save control plots to file
-  outUrl += "/";
-  outUrl += outFileUrl + ".root";
   printf ("Results save in %s\n", outUrl.Data());
 
   //save all to the file
@@ -1087,4 +1088,12 @@ int main (int argc, char *argv[])
 
   if (outTxtFile)
     fclose (outTxtFile);
+
+  // Now that everything is done, dump the list of lumiBlock that we processed in this job
+  if(!isMC){
+    goodLumiFilter.FindLumiInFiles(urls);
+    goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
+  }
+
+
 }

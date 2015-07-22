@@ -19,11 +19,17 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 
+//need for the good lumi filter
+#include "DataFormats/Provenance/interface/LuminosityBlockID.h"
+#include "DataFormats/Provenance/interface/LuminosityBlockRange.h"
+#include "FWCore/Utilities/interface/Algorithms.h"
+
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
 #include "TauAnalysis/JetToTauFakeRate/interface/MacroUtils.h"
+#include "TauAnalysis/JetToTauFakeRate/interface/LumiUtils.h"
 
 #include <vector>
 #include "TVector3.h"
@@ -33,7 +39,6 @@
 
 namespace patUtils
 {
-
    typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 
    //define a generic container to hold information related to pat electrons, muons, taus
@@ -49,19 +54,19 @@ namespace patUtils
    };
 
    namespace llvvElecId { enum ElecId  {Veto, Loose, Medium, Tight, LooseMVA, MediumMVA, TightMVA}; }
-   namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight}; }
+   namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight, StdLoose, StdSoft, StdTight}; }
    namespace llvvPhotonId { enum PhotonId  {Loose, Medium, Tight}; }
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
 
    bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel);
-   bool passStdId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
-   bool passIso(pat::Electron& el,  int IsoLevel);
+   bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0);
    bool passIso(pat::Muon&     mu,  int IsoLevel);
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
-
+   bool passPFJetID(std::string label, pat::Jet jet);
+   bool passPUJetID(pat::Jet j);
 }
 
 #endif
