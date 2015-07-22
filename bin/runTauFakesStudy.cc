@@ -635,7 +635,7 @@ int main (int argc, char *argv[])
       pat::TauCollection selTaus;
       for (size_t itau = 0; itau < taus.size(); ++itau)
         {
-          pat::Tau & tau = taus[itau];
+          pat::Tau& tau = taus[itau];
           if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
           
           bool overlapWithLepton(false);
@@ -654,7 +654,18 @@ int main (int argc, char *argv[])
           // Independent from lepton rejection algos performance
           // if (!tau.tauID ("againstMuonTight3"))                           continue;
           // if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
-         
+          
+//          // Pixel hits cut (will be available out of the box in new MINIAOD production)
+//          int nChHadPixelHits = 0;
+//          reco::CandidatePtrVector chCands = itau.signalChargedHadrCands();
+//          for(reco::CandidatePtrVector::const_iterator iter = chCands.begin(); iter != chCands.end(); iter++){
+//            pat::PackedCandidate const* packedCand = dynamic_cast<pat::PackedCandidate const*>(iter->get());
+//            int pixelHits = packedCand->numberOfPixelHits();
+//            if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
+//          }
+//          if(nChHadPixelHits==0) continue;
+//          //
+
           selTaus.push_back(tau);
         }
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
