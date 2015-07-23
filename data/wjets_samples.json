@@ -42,10 +42,9 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-            { "dtag":"Data13TeV_SingleMu", "split":20, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMu/CMSSW_7_4_0_pre9_ROOT6-GR_R_74_V8A_RelVal_mu2012D-v1/MINIAOD"}
+        { "dtag":"Data13TeV_SingleMuon2015B", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt" }
             ]             
     }       
-
   ]
 }
 

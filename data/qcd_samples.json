@@ -43,7 +43,7 @@
       "destination":"qcd selection",
       "comment":"real split 13",
       "data":[
-        { "dtag":"Data13TeV_JetHT"                            , "split":20, "xsec":1.0       , "br":[ 1.0 ]                 , "dset":"/JetHT/CMSSW_7_4_0_pre9_ROOT6-GR_R_74_V8_1Apr_RelVal_jht2012D-v1/MINIAOD"}
+        { "dtag":"Data13TeV_JetHT2015B", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/JetHT/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt" }
       ]
     }
   ]
