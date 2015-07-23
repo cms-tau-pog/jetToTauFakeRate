@@ -36,9 +36,10 @@ elif [ "${1}" = "plot" ]; then
     mv ~/www/temptemp/* ${DIR}
     cp ~/www/HIG-13-026/index.php ${DIR}
     
-    LUMIWJETS=700
+    LUMIWJETS=16.670
     # should be 470
-    LUMIQCD=4
+    LUMIQCD=19.226
+
     # should be 309
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
     JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
