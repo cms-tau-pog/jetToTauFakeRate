@@ -4,11 +4,11 @@
 
 # 1: run the analysis (must merge submit script here)
 
-if [ "${1}" = "submit" ]; then
-    JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
-    #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json
-    OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
+JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json
+OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
 
+if [ "${1}" = "submit" ]; then
     # cleanup (comment it out if you have smaller jsons for running only on a few sets while the others are OK
     ### rm -r ${OUTDIR}
     # recreate
@@ -17,7 +17,12 @@ if [ "${1}" = "submit" ]; then
     runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
     
 elif [ "${1}" = "lumi" ]; then
-    echo "PLEASE USE the lcr2 script." 
+    rm qcd_lumi.json
+    rm wjet_lumi.json
+    cat ${OUTDIR}/*JetHT*json > qcd_lumi.json
+    cat ${OUTDIR}/*SingleMuon*json > wjet_lumi.json
+    echo "Files qcd_lumi.json and wjet_lumi.json were regenerated."
+    echo "PLEASE USE the lcr2 script on those to get the luminosity that has been run." 
     exit 0
     JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
     OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_lumi
@@ -37,18 +42,20 @@ elif [ "${1}" = "plot" ]; then
     cp ~/www/HIG-13-026/index.php ${DIR}
     
     LUMIWJETS=16.670
+    #LUMIWJETS=333.4
     # should be 470
     LUMIQCD=19.226
+    #LUMIQCD=144.195
 
     # should be 309
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
     JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
     #INDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results/
-    INDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
+    INDIR=${OUTDIR}
     PLOTTERWJETS=${DIR}plotter_wjet.root
     PLOTTERQCD=${DIR}plotter_qcd.root
-    ONLYWJETS="--onlyStartsWith wjet"
-    ONLYQCD="--onlyStartsWith qcd"
+    ONLYWJETS="--onlyStartWith wjet"
+    ONLYQCD="--onlyStartWith qcd"
     PLOTEXT=" --plotExt .png --plotExt .pdf --plotExt .C "
     
     ## Create plotter files from which the ratio for fake rate will be computed
