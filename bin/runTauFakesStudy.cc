@@ -113,7 +113,7 @@ int main (int argc, char *argv[])
   if (!isMC)
     {
       if (dtag.Contains ("JetHT"))     filterOnlyJETHT    = true;
-      if (dtag.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
+      if (dtag.Contains ("SingleMuon"))  filterOnlySINGLEMU = true;
     }
   
   bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
