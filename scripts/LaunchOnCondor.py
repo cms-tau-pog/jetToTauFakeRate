@@ -70,7 +70,7 @@ def CreateTheConfigFile(argv):
         global Jobs_FinalCmds
 	global Path_Cfg
 	global CopyRights
-        Path_Cfg   = Farm_Directories[1]+Jobs_Index+Jobs_Name+'_cfg.py'
+        Path_Cfg   = Farm_Directories[1]+'job'+Jobs_Index+Jobs_Name+'_cfg.py'
 
 	config_file=open(argv[1],'r')
 	config_txt   = '\n\n' + CopyRights + '\n\n'
@@ -106,7 +106,7 @@ def CreateTheShellFile(argv):
         global absoluteShellPath
         if(subTool=='crab'):return
 
-        Path_Shell = Farm_Directories[1]+Jobs_Index+Jobs_Name+Jobs_Index+'.sh'
+        Path_Shell = Farm_Directories[1]+'job'+Jobs_Index+Jobs_Name+Jobs_Index+'.sh'
         function_argument=''
         hostname = os.getenv("HOSTNAME", "")
         
@@ -123,6 +123,8 @@ def CreateTheShellFile(argv):
         if 'purdue.edu' in hostname:
             shell_file.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
             shell_file.write('source /grp/cms/tools/glite/setup.sh\n')
+        elif 'iihe.ac.be' in hostname:
+            shell_file.write('source $VO_CMS_SW_DIR/cmsset_default.sh\n')
 
 	shell_file.write('export SCRAM_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
         shell_file.write('export BUILD_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
@@ -307,9 +309,12 @@ def AddJobToCmdFile():
 	       temp = temp + " '" + absoluteShellPath + "'\n"
 	       cmd_file.write(temp)
 	elif subTool=='qsub':
+                queue = ""
+                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )!=0): queue = ' -q localgrid@cream02 '
+
                 absoluteShellPath = Path_Shell;
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
-                cmd_file.write("qsub " + absoluteShellPath + "\n")
+                cmd_file.write("qsub " + queue + absoluteShellPath + "\n")
         elif subTool=='crab':
                 crabWorkDirPath = Farm_Directories[1]
                 crabConfigPath  = Farm_Directories[1]+'crabConfig_'+Jobs_Index+Jobs_Name+'_cfg.py'
@@ -365,10 +370,10 @@ def SendCluster_Create(FarmDirectory, JobName):
 
 	#determine what is the submission system available, or use condor
         if(subTool==''):
-  	   if(  commands.getstatusoutput("bjobs")[1].find("command not found")<0): subTool = 'bsub'
-           elif(commands.getstatusoutput("qstat")[1].find("command not found")<0): subTool = 'qsub'
-           else:                                                                   subTool = 'condor'
-        if(Jobs_Queue.find('crab')>=0):                                            subTool = 'crab'
+  	   if(  commands.getstatusoutput("bjobs"      )[1].find("command not found")<0): subTool = 'bsub'
+           elif(commands.getstatusoutput("qstat"      )[1].find("command not found")<0): subTool = 'qsub'
+           else:                                                                         subTool = 'condor'
+        if(Jobs_Queue.find('crab')>=0):                                                  subTool = 'crab'
 
 	Jobs_Name  = JobName
 	Jobs_Count = 0

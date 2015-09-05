@@ -4,9 +4,9 @@ import json
 import optparse
 import commands
 import LaunchOnCondor
-import TauAnalysis.JetToTauFakeRate.storeTools_cff as storeTools
+import UserCode.llvv_fwk.storeTools_cff as storeTools
 
-
+PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
@@ -26,15 +26,16 @@ initialCommand = '';
 def initProxy():
    global initialCommand
    validCertificate = True
-   if(validCertificate and (not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')))):validCertificate = False
-   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600): validCertificate = False
-   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --voms cms --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+   if(validCertificate and (not os.path.isfile(os.path.expanduser(PROXYDIR+'/x509_proxy')))):validCertificate = False
+   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser(PROXYDIR+'/x509_proxy')))>600): validCertificate = False
+   # --voms cms, otherwise it does not work normally
+   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
 
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
-      os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --voms-cms --noregen; '
-
+      os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 720:00 --out '+PROXYDIR+'/x509_proxy')
+   # --voms cms?
+   initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; '
 
 def getFileList(procData):
    FileList = [];
@@ -65,9 +66,9 @@ def getFileList(procData):
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
             if IsOnLocalTier:
-               list[i] = "root://eoscms//eos/cms"+list[i]
+                list[i] = "root://eoscms//eos/cms"+list[i]            
             else:
-               list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
+                list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
               #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
               #list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
 
@@ -80,19 +81,13 @@ def getFileList(procData):
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
       split=getByLabel(procData,'split',1)
-      ngroup = len(list)/split
-      if (ngroup * split != len(list) ):
-          ngroup = ngroup+1
-      groupList = ''
-      i=0;
-      while(i <len(list) ):
-         groupList += '"'+list[i]+'",\\n';
-         if(i>0 and i%ngroup==0):
-            FileList.append(groupList)
-            groupList=''
-         i = i+1;               
-      if groupList != '':
-          FileList.append(groupList)
+      NFilesPerJob = max(1,len(list)/split)
+      for g in range(0, len(list), NFilesPerJob):
+         groupList = ''
+         for f in list[g:g+NFilesPerJob]:
+            groupList += '"'+f+'",\\n';
+         FileList.append(groupList)
+
    else:
       print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
       for segment in range(0,split) :
@@ -121,6 +116,7 @@ scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysis
 DatasetFileDB                      = opt.db
 
 FarmDirectory                      = opt.outdir+"/FARM"
+PROXYDIR                           = FarmDirectory+"/inputs/" 
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
@@ -164,8 +160,8 @@ for procBlock in procList :
                 for ibr in br :  xsec = xsec*ibr
 
             FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
-            if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData)
             LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
+            if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData)
 
 
             for s in range(0,len(FileList)):
@@ -192,6 +188,7 @@ for procBlock in procList :
             	if(opt.params.find('@runSystematics')<0) :  opt.params = '@runSystematics=False '  + opt.params
                 if(opt.params.find('@jacknife')<0) :        opt.params = '@jacknife=-1 ' + opt.params
                 if(opt.params.find('@jacks')<0) :           opt.params = '@jacks=-1 '    + opt.params
+                if(opt.params.find('@trig')<0) :            opt.params = '@trig=False ' + opt.params
             	if(len(opt.params)>0) :
                     extracfgs = opt.params.split(' ')
                     for icfg in extracfgs :
