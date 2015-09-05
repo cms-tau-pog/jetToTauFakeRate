@@ -475,6 +475,28 @@ namespace patUtils
     return passPU;
   }
 
+  bool exclusiveDataEventFilter(const double& run, const bool& isMC, const bool& isPromptReco)
+  {
+    bool passExclusiveDataEventFilter(false);
+
+    if(isMC)
+      passExclusiveDataEventFilter=true;
+    else
+      {
+        bool isForPromptReco(run<251162 || run>251562);
+        if(isPromptReco)  // Prompt reco keeps events outside of that range                                                                          
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=true;
+            else                passExclusiveDataEventFilter=false;
+          }
+        else // 17Jul15 ReReco keeps event inside that range                                                                                         
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=false;
+            else                passExclusiveDataEventFilter=true;
+          }
+      }
+    return passExclusiveDataEventFilter;
+  }
 
 
 
