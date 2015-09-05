@@ -9,9 +9,21 @@
       "destination":"qcd selection",
       "comment":"real split 13",
       "data":[
-        { "dtag":"Data13TeV_JetHT"                            , "split":20, "xsec":1.0       , "br":[ 1.0 ]                 , "dset":"/JetHT/CMSSW_7_4_0_pre9_ROOT6-GR_R_74_V8_1Apr_RelVal_jht2012D-v1/MINIAOD"}
+        { "dtag":"Data13TeV_JetHT2015BPromptReco", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/JetHT/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" },
+        { "dtag":"Data13TeV_JetHT2015BReReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/JetHT/Run2015B-17Jul2015-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" }   
       ]
-    }
+    },
+    { 
+      "tag":"SingleMu data",
+      "isdata":true,
+      "color":1,
+      "fill":0,
+      "destination":"wjets selection",
+      "comment":"real split 17",
+      "data":[        
+        { "dtag":"Data13TeV_SingleMuon2015BPromptReco", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015BReReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-17Jul2015-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" }                        ]             
+    }       
   ]
 }
 

@@ -95,7 +95,8 @@
       "destination":"qcd selection",
       "comment":"real split 13",
       "data":[
-        { "dtag":"Data13TeV_JetHT2015B", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/JetHT/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt" }
+        { "dtag":"Data13TeV_JetHT2015BPromptReco", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/JetHT/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" },
+        { "dtag":"Data13TeV_JetHT2015BReReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/JetHT/Run2015B-17Jul2015-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" }   
       ]
     },
     { 
@@ -106,12 +107,12 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-        { "dtag":"Data13TeV_SingleMuon2015B", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt" }
-            ]             
+        { "dtag":"Data13TeV_SingleMuon2015BPromptReco", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015BReReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-17Jul2015-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt" }                                              
+      ]                   
     }       
   ]
 }
-
 
 
 
