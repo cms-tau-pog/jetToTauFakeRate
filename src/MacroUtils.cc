@@ -341,8 +341,54 @@ namespace utils
 	   return Total;
 	}
 
+  void getMCPileupDistributionFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup)
+  {
+    mcpileup.clear();
+    mcpileup.resize(Npu);
+    for(unsigned int f=0;f<urls.size();f++){
+       TFile* file = TFile::Open(urls[f].c_str() );
+       fwlite::Event ev(file);
+       for(ev.toBegin(); !ev.atEnd(); ++ev){
+          fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
+          puInfoH.getByLabel(ev, "addPileupInfo");
+          if(!puInfoH.isValid()){printf("collection PileupSummaryInfos with name addPileupInfo does not exist\n"); exit(0);}
+          unsigned int ngenITpu = 0;
+          for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
+             if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
+          }
+          if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+          mcpileup[ngenITpu]++;
+       }
+       delete file;
+     }
+  }
+ 
 
+  void getMCPileupDistributionFromMiniAODtemp(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup)
+  {
+    mcpileup.clear();
+    mcpileup.resize(Npu);
+    for(unsigned int f=0;f<urls.size();f++){
+       TFile* file = TFile::Open(urls[f].c_str() );
+       fwlite::Event ev(file);
+       for(ev.toBegin(); !ev.atEnd(); ++ev){
+         reco::VertexCollection vtx;
+         fwlite::Handle < reco::VertexCollection > vtxHandle;
+         vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
+         if (vtxHandle.isValid() ) vtx = *vtxHandle;
 
+         unsigned int ngenITpu = vtx.size();
+          //for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
+          //   if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
+          //}
+          if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+          mcpileup[ngenITpu]++;
+       }
+       delete file;
+     }
+  }
+
+  // This function is being removed. Doing that in a couple days, after testing the new format.
   void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
   {
     mcpileup.clear();

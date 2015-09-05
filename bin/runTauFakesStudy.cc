@@ -63,6 +63,91 @@
 
 using namespace std;
 
+bool passPFJetID(std::string label,
+                 pat::Jet jet){
+  
+  bool passID(false); 
+  
+  float rawJetEn(jet.correctedJet("Uncorrected").energy() );
+
+  double eta=jet.eta();
+ 
+  float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
+  float nef( jet.neutralEmEnergy()/rawJetEn );
+  float cef( jet.chargedEmEnergy()/rawJetEn );
+  float chf( jet.chargedHadronEnergy()/rawJetEn );
+  float nch    = jet.chargedMultiplicity();
+  float nconst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+  float muf(jet.muonEnergy()/rawJetEn); 
+
+  // Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
+  if(label=="Loose")
+    passID = ( (nhf<0.99 && nef<0.99 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4) );
+  if(label=="Tight")
+    passID = ( (nhf<0.90 && nef<0.90 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4) );
+  
+  return passID; 
+  
+}
+
+
+bool hasStableLeptonAsDaughter(const reco::GenParticle p)
+{
+  bool foundL(false);
+  if(p.numberOfDaughters()==0) return foundL;
+
+  // cout << "Particle " << p.pdgId() << " with status " << p.status() << " and " << p.numberOfDaughters() << endl;
+  const reco::Candidate *part = &p;
+  // loop on the daughter particles to check if it has an e/mu as daughter
+  while ((part->numberOfDaughters()>0)) {
+    const reco::Candidate* DaughterPart = part->daughter(0);
+    // cout << "\t\t Daughter: " << DaughterPart->pdgId() << " with status " << DaughterPart->status() << endl;
+    if (fabs(DaughterPart->pdgId()) == 11 || fabs(DaughterPart->pdgId() == 13)){
+      if(DaughterPart->status() == 1 || DaughterPart->status() == 2 ){
+        foundL = true;
+        break;
+      }
+    }
+    part=DaughterPart;
+  }
+  return foundL;
+}
+
+
+bool hasWasMother(const reco::GenParticle  p)
+{
+  bool foundW(false);
+  if(p.numberOfMothers()==0) return foundW;
+  const reco::Candidate* part =&p; // (p.mother());
+  // loop on the mother particles to check if it has a W as mother
+  while ((part->numberOfMothers()>0)) {
+    const reco::Candidate* MomPart =part->mother();
+    if (fabs(MomPart->pdgId())==24){
+      foundW = true;
+      break;
+    }
+    part = MomPart;
+  }
+  return foundW;
+}
+
+bool hasTauAsMother(const reco::GenParticle  p)
+{
+  bool foundTau(false);
+  if(p.numberOfMothers()==0) return foundTau;
+  const reco::Candidate* part = &p; //(p.mother());
+  // loop on the mother particles to check if it has a tau as mother
+  while ((part->numberOfMothers()>0)) {
+    const reco::Candidate* MomPart =part->mother();
+    if (fabs(MomPart->pdgId())==15)// && MomPart->status() == 2) // Not sure the status check is needed.
+      {
+        foundTau = true;
+        break;
+      }
+    part = MomPart;
+  }
+  return foundTau;
+}
 
 int main (int argc, char *argv[])
 {
@@ -122,6 +207,7 @@ int main (int argc, char *argv[])
   bool isZGmc       (isMC && dtag.Contains ("ZG"));
   bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
   bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
+  bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco"));
   
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
@@ -173,14 +259,14 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (4, "Base");
 
   //event selection
-  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0, 6));
-  h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
-  h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
-  h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
-  h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
-  h->GetXaxis()->SetBinLabel (5, "op. sign");
-  h->GetXaxis()->SetBinLabel (6, "#geq 2 b-tags");
-  h = (TH1D*) mon.addHistogram (new TH1D ("eventflowslep", ";;Events", 6, 0, 6));
+  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("wjet_eventflow", ";;Events", 6, 0, 6));
+  h->GetXaxis()->SetBinLabel (1, "-");
+  h->GetXaxis()->SetBinLabel (2, "#geq 1 vertex");
+  h->GetXaxis()->SetBinLabel (3, "1 lepton (+veto)");
+  h->GetXaxis()->SetBinLabel (4, "M_{T}>50~GeV");
+  h->GetXaxis()->SetBinLabel (5, "#geq 1 jet");
+  h->GetXaxis()->SetBinLabel (6, "#geq 1 b-tags");
+  h = (TH1D*) mon.addHistogram (new TH1D ("qcd_eventflow", ";;Events", 6, 0, 6));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
@@ -247,6 +333,7 @@ int main (int argc, char *argv[])
       mon.addHistogram(new TH1D(icat+"eta_denominator", ";#eta_{jet};Events", 25, -2.5, 2.5));
       mon.addHistogram(new TH1D(icat+"radius_denominator", ";R_{jet};Events", 20, 0., 1.));
       mon.addHistogram(new TH1D(icat+"nvtx_denominator", ";N_{vtx};Events", 30, 0., 60.));        
+      mon.addHistogram(new TH1D(icat+"nbtags_denominator", ";N_{b-tags};Events", 6, 0., 6.));        
       for(size_t l=0; l<tauDiscriminators.size(); ++l){
         TString tcat(tauDiscriminators[l]);
         mon.addHistogram(new TH1D(icat+tcat+"pt_numerator",   ";p_{T}^{jet};Events", 50, 0., 500.)); // Variable number of bins to be implemented
@@ -255,6 +342,7 @@ int main (int argc, char *argv[])
         mon.addHistogram(new TH1D(icat+tcat+"eta_numerator",   ";#eta_{jet};Events", 25, -2.5, 2.5));
         mon.addHistogram(new TH1D(icat+tcat+"radius_numerator",   ";R_{jet};Events", 20, 0., 1.));
         mon.addHistogram(new TH1D(icat+tcat+"nvtx_numerator",   ";N_{vtx};Events", 30, 0., 60.));
+        mon.addHistogram(new TH1D(icat+tcat+"nbtags_numerator", ";N_{b-tags};Events", 6, 0., 6.));        
       }
       
       // Some control plots, mostly on event selection
@@ -264,7 +352,7 @@ int main (int argc, char *argv[])
       mon.addHistogram(new TH1D(icat+"met",     ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
       mon.addHistogram(new TH1D(icat+"recoMet", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
       mon.addHistogram(new TH1D(icat+"mt",      ";Transverse mass;Events",                 50, 0.,  500.));
-
+      mon.addHistogram(new TH1D(icat+"nbtags",  ";N_{b-tags};Events",                       6, 0.,    6.));        
 
 
     }                           // End of loop on controlCats
@@ -281,11 +369,11 @@ int main (int argc, char *argv[])
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
 
-  fwlite::ChainEvent ev (urls);
-  const size_t totalEntries = ev.size ();
+  //fwlite::ChainEvent ev (urls);
+  size_t totalEntries(0);// = ev.size ();
 
   //MC normalization (to 1/pb)
-  double xsecWeight = xsec / totalEntries;
+  double xsecWeight = xsec; // / totalEntries;
   if(!isMC) xsecWeight = 1.0;
   if(debug){
     cout << "DEBUG: xsec: " << xsec << endl;
@@ -313,6 +401,25 @@ int main (int argc, char *argv[])
   double beff (0.68), sfb (0.99), sfbunc (0.015);
   double leff (0.13), sfl (1.05), sflunc (0.12);
 
+  // b-tagging working points
+  // TODO: in 74X switch to pfCombined.... (based on pf candidates instead of tracks) (recommended)
+  // Apparently this V2 has the following preliminary operating points:
+  // These preliminary operating points were derived from ttbar events:
+  //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
+  //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
+  //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
+  
+  // New recommendations for 50ns https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X50ns
+  //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
+  //      v2CSVv2L 0.605
+  //      v2CSVv2M 0.890
+  //      v2CSVv2T 0.970
+  double
+    btagLoose(0.605),
+    btagMedium(0.890),
+    btagTight(0.970);
+  
+
   //pileup weighting
   edm::LumiReWeighting * LumiWeights = NULL;
   utils::cmssw::PuShifter_t PuShifters;
@@ -326,7 +433,7 @@ int main (int argc, char *argv[])
           dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
         }
       std::vector < float >mcPileupDistribution;
-      utils::getMCPileupDistributionFromMiniAOD (ev, dataPileupDistribution.size (), mcPileupDistribution);
+      utils::getMCPileupDistributionFromMiniAODtemp (urls, dataPileupDistribution.size (), mcPileupDistribution);
       while (mcPileupDistribution.size () < dataPileupDistribution.size ()) mcPileupDistribution.push_back (0.0);
       while (mcPileupDistribution.size () > dataPileupDistribution.size ()) dataPileupDistribution.push_back (0.0);
       gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -345,27 +452,41 @@ int main (int argc, char *argv[])
   //##############################################
   //loop on all the events
   printf ("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
-  printf ("Scanning the ntuple :");
-  int treeStep (totalEntries / 50);
-  //DuplicatesChecker duplicatesChecker;
-  //int nDuplicates(0);
+
   int nSkipped(0);
   int nMultiChannel(0);
   int nNoChannel(0);
-  for (size_t iev = 0; iev < totalEntries; iev++)
+  
+  for(size_t f=0; f<urls.size();++f){
+    TFile* file = TFile::Open(urls[f].c_str());
+    fwlite::Event ev(file);
+    printf ("Scanning the ntuple %2lu/%2lu : ", f+1, urls.size());
+    int iev(0);
+    int treeStep (ev.size() / 50);
+    //DuplicatesChecker duplicatesChecker;
+    //int nDuplicates(0);
+    
+    for (ev.toBegin(); !ev.atEnd(); ++ev)
     {
+      iev++;
+      totalEntries++;
       if (iev % treeStep == 0)
         {
           printf (".");
           fflush (stdout);
         }
-
+      
       std::vector < TString > tags (1, "all");
       mon.fillHisto("initNorm", tags, 0., 1.);
 
       //##############################################   EVENT LOOP STARTS   ##############################################
-      ev.to (iev);              //load the event content from the EDM file
+      // Not needed anymore with the current way of looping ev.to (iev);              //load the event content from the EDM file
       //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
+
+      if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+
+      // Skip bad lumi                                                                                                                              
+      if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue;
 
       //apply trigger and require compatibilitiy of the event with the PD
       edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
@@ -395,81 +516,72 @@ int main (int argc, char *argv[])
       if (!(jetTrigger || muTrigger)){ nSkipped++; continue;}         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       mon.fillHisto("initNorm", tags, 1., 1.);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
-      
+
+
       //load all the objects we will need to access
       reco::VertexCollection vtx;
       fwlite::Handle < reco::VertexCollection > vtxHandle;
       vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
       if (vtxHandle.isValid() ) vtx = *vtxHandle;
-
+      
       double rho = 0;
       fwlite::Handle < double >rhoHandle;
       rhoHandle.getByLabel (ev, "fixedGridRhoFastjetAll");
       if (rhoHandle.isValid() ) rho = *rhoHandle;
+      
+      if(isMC && mctruthmode!=0)
+        {
+          reco::GenParticleCollection gen;
+          fwlite::Handle < reco::GenParticleCollection > genHandle;
+          genHandle.getByLabel (ev, "prunedGenParticles");
+          if (genHandle.isValid() ) gen = *genHandle;
+          
+          // Save time and don't load the rest of the objects when selecting by mctruthmode :)
+          bool hasTop(false);
+          int
+            ngenLeptonsStatus3(0),
+            ngenLeptonsNonTauSonsStatus3(0),
+            ngenTausStatus3(0),
+            ngenQuarksStatus3(0);
+          //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
+          //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+          //if(iev != 500) continue;
+          for(size_t igen=0; igen<gen.size(); igen++){
+            // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
+            
+            //cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+            //if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
+            if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
+            int absid=abs(gen[igen].pdgId());
+            if(absid==6 && gen[igen].status()==62){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
+              hasTop=true;
+              //if(isTTbarMC){
+              //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
+              //  else                        tbarPt=gen[igen].pt();
+              //}
+            }
+            
+            //if(!gen[igen].isPromptFinalState() ) continue;
+            if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
+            if(absid==11 || absid==13){
+              ngenLeptonsStatus3++;
+              if(!hasTauAsMother(gen[igen]))
+                ngenLeptonsNonTauSonsStatus3++;
+            }
+            if(absid==15 && !hasStableLeptonAsDaughter(gen[igen])      ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
+            if(absid<=5              ) ngenQuarksStatus3++;
+          }
 
-      /////// No gen particles are needed. Consider removing the commented part at all
-      // no genparticles needed // reco::GenParticleCollection gen;
-      // no genparticles needed // fwlite::Handle < reco::GenParticleCollection > genHandle;
-      // no genparticles needed // genHandle.getByLabel (ev, "prunedGenParticles");
-      // no genparticles needed // if (genHandle.isValid() ) gen = *genHandle;
-      // no genparticles needed // 
-      // no genparticles needed // // Save time and don't load the rest of the objects when selecting by mctruthmode :)
-      // no genparticles needed // bool hasTop(false);
-      // no genparticles needed // int
-      // no genparticles needed //   ngenLeptonsStatus3(0),
-      // no genparticles needed //   ngenTausStatus3(0),
-      // no genparticles needed //   ngenQuarksStatus3(0);
-      // no genparticles needed // //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
-      // no genparticles needed // //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
-      // no genparticles needed // if(isMC)
-      // no genparticles needed //   {
-      // no genparticles needed //     //if(iev != 500) continue;
-      // no genparticles needed //     for(size_t igen=0; igen<gen.size(); igen++){
-      // no genparticles needed //       // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
-      // no genparticles needed //       
-      // no genparticles needed //       //cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-      // no genparticles needed //       //if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
-      // no genparticles needed // 
-      // no genparticles needed //       
-      // no genparticles needed //       int absid=abs(gen[igen].pdgId());
-      // no genparticles needed //       if(absid==6 /*&& gen[igen].isHardProcess()*/){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
-      // no genparticles needed //         hasTop=true;
-      // no genparticles needed //         //if(isTTbarMC){
-      // no genparticles needed //         //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
-      // no genparticles needed //         //  else                        tbarPt=gen[igen].pt();
-      // no genparticles needed //         //}
-      // no genparticles needed //       }
-      // no genparticles needed // 
-      // no genparticles needed //       //if(!gen[igen].isPromptFinalState() ) continue;
-      // no genparticles needed // 
-      // no genparticles needed //       if(absid==11 || absid==13) ngenLeptonsStatus3++;
-      // no genparticles needed //       if(absid==15             ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
-      // no genparticles needed //       if(absid<=5              ) ngenQuarksStatus3++;
-      // no genparticles needed //     }
-      // no genparticles needed //     
-      // no genparticles needed //     // Dileptons:
-      // no genparticles needed //     //    ttbar dileptons --> 1
-      // no genparticles needed //     //    ttbar other     --> 2
-      // no genparticles needed //     if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
-      // no genparticles needed //     if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
-      // no genparticles needed //     // FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
-      // no genparticles needed //     //if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-      // no genparticles needed //     //if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-      // no genparticles needed //     //if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-      // no genparticles needed // 
-      // no genparticles needed //     // lepton-tau:
-      // no genparticles needed //     //    ttbar ltau      --> 3
-      // no genparticles needed //     //    ttbar dileptons --> 4
-      // no genparticles needed //     //    ttbar ljets     --> 5
-      // no genparticles needed //     //    ttbar hadrons   --> 6
-      // no genparticles needed //     if(mctruthmode==3 && (ngenLeptonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue;
-      // no genparticles needed //     if(mctruthmode==4 && (ngenLeptonsStatus3!=2                        || !hasTop )) continue;
-      // no genparticles needed //     if(mctruthmode==5 && (ngenLeptonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
-      // no genparticles needed //     if(mctruthmode==6 && (ngenLeptonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
-      // no genparticles needed // 
-      // no genparticles needed //   }
+          if(mctruthmode==1 && (ngenTausStatus3==0 || !hasTop)) continue;
+          if(mctruthmode==2 && (ngenTausStatus3!=0 || !hasTop)) continue;
+          
+        }
+      
+      
+      
+      
       mon.fillHisto("initNorm", tags, 2., 1.);
-
+      
       //      if(tPt>0 && tbarPt>0 && topPtWgt)
       //        {
       //          topPtWgt->computeWeight(tPt,tbarPt);
@@ -542,13 +654,13 @@ int main (int argc, char *argv[])
         {
           int ngenITpu = 0;
           
-          fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-          puInfoH.getByLabel (ev, "addPileupInfo");
-          for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-            {
-              if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-            }
-          
+          //fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+          //puInfoH.getByLabel (ev, "addPileupInfo");
+          //for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+          //  {
+          //    if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+          //  }
+          ngenITpu=vtx.size();
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
           weight = 1.;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
@@ -696,7 +808,8 @@ int main (int argc, char *argv[])
       
       //select the jets
       pat::JetCollection
-        selWJetsJets, selQCDJets;
+        selWJetsJets, selQCDJets,
+        selWJetsBJets, selQCDBJets;
       for (size_t ijet = 0; ijet < jets.size(); ijet++)
         {
           if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 4.7) continue;
@@ -711,14 +824,21 @@ int main (int argc, char *argv[])
             minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
           
           //jet id
-          bool passPFloose = true;      //FIXME --> Need to be updated according to te latest recipe;
+          bool passPFloose = passPFJetID("Loose", jets[ijet]);      //FIXME --> Need to be updated according to te latest recipe;
           float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
           bool passLooseSimplePuId = true;      //FIXME --> Need to be updated according to the latest recipe
           if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.5) continue;
 
+          bool hasCSVtag( jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertezV2BJetTags") > btagLoose );
+
           selQCDJets.push_back(jets[ijet]);
+          if(hasCSVtag)
+            selQCDBJets.push_back(jets[ijet]);
+
           if (minDRlj < 0.7) continue;
           selWJetsJets.push_back(jets[ijet]);
+          if(hasCSVtag)
+            selWJetsBJets.push_back(jets[ijet]);
         }
       std::sort (selWJetsJets.begin(),  selWJetsJets.end(),  utils::sort_CandidatesByPt);
       std::sort (selQCDJets.begin(),  selQCDJets.end(),  utils::sort_CandidatesByPt);
@@ -757,23 +877,23 @@ int main (int argc, char *argv[])
         bool passMtSelection(mt>50 );
         // At least one jet not overlapping with the muon
         bool passJetSelection(selWJetsJets.size()>0);
-
-       
+        bool passBtagSelection(selWJetsBJets.size()==0); // Kill ttbar component
+        
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
         mon.fillHisto("initNorm", tags, 3., 1.);
-                                                                                           { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", wjetTags, 0, weight);}
-        if(passVtxSelection)                                                               { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", wjetTags, 1, weight);}
-        if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", wjetTags, 2, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", wjetTags, 3, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", wjetTags, 4, weight);}
-        
+                                                                                           { ctrlCats.push_back("step1"); mon.fillHisto("wjet_eventflow", wjetTags, 0, weight);}
+        if(passVtxSelection)                                                               { ctrlCats.push_back("step2"); mon.fillHisto("wjet_eventflow", wjetTags, 1, weight);}
+        if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("wjet_eventflow", wjetTags, 2, weight);}
+        if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("wjet_eventflow", wjetTags, 3, weight);}
+        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("wjet_eventflow", wjetTags, 4, weight);}
+        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection && passBtagSelection) { ctrlCats.push_back("step6"); mon.fillHisto("wjet_eventflow", wjetTags, 5, weight);} 
         
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-          if(icat!="step5") continue; // Only for final selection step, for a quick test
+          if(icat!="step5" && icat!="step6") continue; // Only for final selection step, for a quick test
           
           
           // Fake rate: 
@@ -886,9 +1006,9 @@ int main (int argc, char *argv[])
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
         mon.fillHisto("initNorm", tags, 3., 1.);
-                                                 { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", qcdTags, 0, weight);}
-        if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", qcdTags, 1, weight);}
-        if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", qcdTags, 2, weight);}
+                                                 { ctrlCats.push_back ("step1"); mon.fillHisto("qcd_eventflow", qcdTags, 0, weight);}
+        if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("qcd_eventflow", qcdTags, 1, weight);}
+        if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("qcd_eventflow", qcdTags, 2, weight);}
         
         
         // Fill the control plots
@@ -1068,8 +1188,13 @@ int main (int argc, char *argv[])
           //    //double mt = higgs::utils::transverseMass (idileptonSystem, zvv, true);
           //    
           //  }
-        }
-    }
+        } // End stat analysis
+
+    } // End single file event loop
+    printf("\n");
+    delete file;
+  } // End loop on files
+
   if(nSkipped>0) cout << "Warning! There were " << nSkipped << " skipped because of trigger events out of " << totalEntries << " events!" << endl;
   if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
   if(nNoChannel>0) cout << "Warning! There were " << nNoChannel << " no-channel events out of " << totalEntries << " events!" << endl;
