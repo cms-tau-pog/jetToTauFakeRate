@@ -24,15 +24,31 @@
             ]             
     },          
     {            
-      "tag":"t#bar{t}",
+      "tag":"t#bar{t} real #tau_{h}s",
       "isdata":false,
       "color":614,
       "lcolor":1,
+      "mctruthmode":1,
       "destination":"wjets and qcd selection",
       "comment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
       "othercomment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "additionalcomment":"This pythia6 sample is at the moment the best sample for ttbar modeling",
       "data":[
-        { "dtag":"MC13TeV_TTJets_inclusive"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM"}
+        { "dtag":"MC13TeV_TTJets_realtaus"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM"}
+      ]
+    },
+    {            
+      "tag":"t#bar{t} no #tau_{h}",
+      "isdata":false,
+      "color":625,
+      "lcolor":1,
+      "mctruthmode":2,
+      "destination":"wjets and qcd selection",
+      "comment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "othercomment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "additionalcomment":"This pythia6 sample is at the moment the best sample for ttbar modeling",
+      "data":[
+        { "dtag":"MC13TeV_TTJets_notaus"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM"}
       ]
     },
     { 
