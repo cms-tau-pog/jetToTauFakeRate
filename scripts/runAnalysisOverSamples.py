@@ -4,7 +4,7 @@ import json
 import optparse
 import commands
 import LaunchOnCondor
-import UserCode.llvv_fwk.storeTools_cff as storeTools
+import TauAnalysis.JetToTauFakeRate.storeTools_cff as storeTools
 
 PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
