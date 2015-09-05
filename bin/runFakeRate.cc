@@ -177,6 +177,7 @@ public:
           sample_.push_back("t#bar{t}");
           if(doData_) data_ = "SingleMu data";
           step_=TString("step5");
+          rawname_=name_;
         }
       else if(name_ == "wjet_wonly")
         {
@@ -184,12 +185,38 @@ public:
           sample_.push_back("QCDMuEnriched");
           if(doData_) data_ = "SingleMu data";
           step_=TString("step5");
+          rawname_="wjet";
         }
       else if(name_ == "wjet_tonly")
         {
           sample_.push_back("t#bar{t}");
           if(doData_) data_ = "SingleMu data";
           step_=TString("step5");
+          rawname_="wjet";
+        }
+      if(name_ == "wjetnob")
+        {
+          sample_.push_back("W,multijets");
+          sample_.push_back("QCDMuEnriched");
+          sample_.push_back("t#bar{t}");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step6");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnob_wonly")
+        {
+          sample_.push_back("W,multijets");
+          sample_.push_back("QCDMuEnriched");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step6");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnob_tonly")
+        {
+          sample_.push_back("t#bar{t}");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step6");
+          rawname_="wjet";
         }
       else if(name_ == "qcd")
         {
@@ -197,6 +224,21 @@ public:
           sample_.push_back("QCD");
           if(doData_) data_ = "JetHT data";
           step_=TString("step3");
+          rawname_=name_;
+        }
+      else if(name_ == "qcd_qonly")
+        {
+          sample_.push_back("QCD");
+          if(doData_) data_ = "JetHT data";
+          step_=TString("step3");
+          rawname_="qcd";
+        }
+      else if(name_ == "qcd_tonly")
+        {
+          sample_.push_back("t#bar{t}");
+          if(doData_) data_ = "JetHT data";
+          step_=TString("step3");
+          rawname_="qcd";
         }
       else
         {
@@ -208,6 +250,7 @@ public:
   ~FakeRateAnalysis(){};
   
   TString name()                { return name_;          };
+  TString rawname()             { return rawname_;       };
   TString step()                { return step_;          };
   size_t nsamples()             { return sample_.size(); };
   TString sample(size_t i)      { return sample_[i];     };
@@ -215,6 +258,7 @@ public:
 
 private:
   TString name_;
+  TString rawname_;
   std::vector<TString> sample_;
   TString step_;
   bool doData_;
@@ -358,11 +402,20 @@ int main (int argc, char *argv[])
 
   // Quark-jets selection
   analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
-  //analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
-  //analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
   
   // Gluon-jets selection
   analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
+
+  analyses.push_back( new FakeRateAnalysis("qcd_qonly", doData) ); // Compute fakes for wjets MC only
+  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
+  analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
+  analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
+
+  analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
+  
+
 
   FakesVariableCollection vars;
   vars.push_back( new FakesVariable("pt"     , 1) );
@@ -377,8 +430,8 @@ int main (int argc, char *argv[])
     {
       FakeRateAnalysis* anal = *ianal;
       cout << "Processing anal: " << anal->name();
-      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15/plotter_")+anal->name()+TString(".root"));
-      cout << " using file " << "~/www/13TeV_tauFakes_spring15/plotter_" << anal->name() << ".root" << endl;
+      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15/plotter_")+anal->rawname()+TString(".root"));
+      cout << " using file " << "~/www/13TeV_tauFakes_spring15/plotter_" << anal->rawname() << ".root" << endl;
       
       for(TauDiscriminatorSetCollection::iterator idiscr=discriminators.begin(); idiscr!=discriminators.end(); ++idiscr)
         {
@@ -403,13 +456,13 @@ int main (int argc, char *argv[])
                   cout << "\t \t \t Processing sample: " << sample  << endl;
                   // Denominator is common (independent on tauID)
                   if(!denominator)
-                    denominator = (TH1*)     f->Get(sample+TString("/")+anal->name()+TString("_")+anal->step()+var->name()+TString("_denominator"));
+                    denominator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"));
                   else
-                    denominator ->Add((TH1*) f->Get(sample+TString("/")+anal->name()+TString("_")+anal->step()+var->name()+TString("_denominator"))); 
+                    denominator ->Add((TH1*) f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"))); 
                 }
               
               if(doData)
-                data_denominator = (TH1*) f->Get(anal->data()+TString("/")+anal->name()+TString("_")+anal->step()+var->name()+TString("_denominator"));     
+                data_denominator = (TH1*) f->Get(anal->data()+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"));     
               
               for(size_t l=0; l<discr->nwp(); ++l) // Loop on working points
                 {
@@ -427,9 +480,9 @@ int main (int argc, char *argv[])
                       TString sample(anal->sample(isample));
                       cout << "\t \t \t \t Processing sample: " << sample << endl;
                       if(!temp_numerator)
-                        temp_numerator = (TH1*)     f->Get(sample+TString("/")+anal->name()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"));    
+                        temp_numerator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"));    
                       else
-                        temp_numerator ->Add((TH1*) f->Get(sample+TString("/")+anal->name()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"))); 
+                        temp_numerator ->Add((TH1*) f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"))); 
                     }
                   
                   if(!temp_numerator) cout << "temp_numerator is NULL" << endl;          
@@ -454,7 +507,7 @@ int main (int argc, char *argv[])
                   // Data
                   if(doData)
                     {
-                      data_temp_numerator     = (TH1*) f->Get(anal->data()+TString("/")+anal->name()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"));
+                      data_temp_numerator     = (TH1*) f->Get(anal->data()+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"));
                  
                       data_temp_numerator    ->Sumw2();          
                   
