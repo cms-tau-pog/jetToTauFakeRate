@@ -5,8 +5,8 @@
 # 1: run the analysis (must merge submit script here)
 
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
-JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
-JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjetsonly.json
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjetsonly.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15_improved_2/
