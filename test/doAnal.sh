@@ -5,8 +5,11 @@
 # 1: run the analysis (must merge submit script here)
 
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
+JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjetsonly.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
+OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15_improved_2/
 
 if [ "${1}" = "submit" ]; then
     # cleanup (comment it out if you have smaller jsons for running only on a few sets while the others are OK
@@ -14,7 +17,7 @@ if [ "${1}" = "submit" ]; then
     # recreate
     mkdir -p ${OUTDIR}
     
-    runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
+    runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 1nh
     
 elif [ "${1}" = "lumi" ]; then
     rm qcd_lumi.json
@@ -22,7 +25,17 @@ elif [ "${1}" = "lumi" ]; then
     cat ${OUTDIR}/*JetHT*json > qcd_lumi.json
     cat ${OUTDIR}/*SingleMuon*json > wjet_lumi.json
     echo "Files qcd_lumi.json and wjet_lumi.json were regenerated."
-    echo "PLEASE USE the lcr2 script on those to get the luminosity that has been run." 
+    echo "Now running brilcalc according to the luminosity group recommendation:"
+    echo "brilcalc lumi -i qcd_lumi.json -n 0.962"
+    export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
+    brilcalc lumi -i qcd_lumi.json -n 0.962
+    echo "brilcalc lumi -i wjet_lumi.json -n 0.962"
+    export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
+    brilcalc lumi -i wjet_lumi.json -n 0.962
+    echo "To be compared with the output of the full json:"
+    echo "brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt -n 0.962"
+    brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt -n 0.962
+
     exit 0
     JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
     OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_lumi
@@ -45,7 +58,10 @@ elif [ "${1}" = "plot" ]; then
     #LUMIWJETS=333.4
     # should be 470
     LUMIQCD=19.226
-    #LUMIQCD=144.195
+    #LUMIQCD=144.19
+
+    LUMIWJETS=40.240
+    LUMIQCD=40.240
 
     # should be 309
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
@@ -64,6 +80,26 @@ elif [ "${1}" = "plot" ]; then
 
     # QCD
     runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}
+
+
+
+    DIR=~/www/13TeV_tauFakes_spring15_split/
+    mkdir -p ${DIR}
+    mkdir -p ~/www/temptemp/
+    mv ${DIR}*vischia*pdf ~/www/temptemp/
+    rm -r ${DIR}*
+    mv ~/www/temptemp/* ${DIR}
+    cp ~/www/HIG-13-026/index.php ${DIR}
+    JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_ttsplit_samples.json
+    JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_ttsplit_samples.json
+
+    ## Create plotter files from which the ratio for fake rate will be computed
+    # WJets
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}
+
+    # QCD
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}
+
 
  
     # Now run test/harvest.sh by hand please
