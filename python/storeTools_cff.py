@@ -225,6 +225,7 @@ def keepOnlyFilesFromGoodRun(fileList, jsonPath):
       #   for lumi in commands.getstatusoutput('das_client.py --limit=0 --query "lumi file='+f+'"')[1].replace('[','').replace(']','').split(','):
       #      if(IsGoodLumi(run, lumi)):return True
 
+      
       #FASTER technique only based on run number and file name parsing
       if '/00000/' in F:
           Fsplit = F.split('/00000/')[0].split('/')
@@ -234,3 +235,46 @@ def keepOnlyFilesFromGoodRun(fileList, jsonPath):
           outFileList.extend([F])
 
    return outFileList
+
+
+"""
+Takes a directory on eos (starting from /store/...) and returns a list of all files with 'prepend' prepended
+"""
+def getLslist(directory, mask='', prepend='root://eoscms//eos/cms', local='False'):
+    from subprocess import Popen, PIPE
+    print 'looking into: '+directory+'...'
+
+    if(directory.find('/lustre/ncg.ingrid.pt/')==0) : 
+        isNCG=True
+        isLocal=True
+
+    eos_cmd = '/afs/cern.ch/project/eos/installation/0.2.41/bin/eos.select'
+
+    data=""
+    if local:
+        data = Popen(['ls', directory],stdout=PIPE)
+    else:
+        data = Popen([eos_cmd, 'ls', '/eos/cms/'+directory],stdout=PIPE)
+    
+    out,err = data.communicate()
+
+    full_list = []
+
+    ## if input file was single root file:
+    if directory.endswith('.root'):
+        if len(out.split('\n')[0]) > 0:
+            return [prepend + directory]
+
+    ## instead of only the file name append the string to open the file in ROOT
+    for line in out.split('\n'):
+        if len(line.split()) == 0: continue
+        full_list.append(prepend + directory + '/' + line)
+
+    ## strip the list of files if required
+    if mask != '':
+        stripped_list = [x for x in full_list if mask in x]
+        return stripped_list
+
+    print full_list
+    ## return 
+    return full_list
