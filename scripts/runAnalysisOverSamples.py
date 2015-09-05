@@ -165,8 +165,9 @@ for procBlock in procList :
 
             FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
             if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData)
-
             LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
+
+
             for s in range(0,len(FileList)):
                 #create the cfg file
                 eventsFile = FileList[s]
