@@ -24,6 +24,14 @@ elif [ "${1}" = "lumi" ]; then
     rm wjet_lumi.json
     cat ${OUTDIR}/*JetHT*json > qcd_lumi.json
     cat ${OUTDIR}/*SingleMuon*json > wjet_lumi.json
+
+    sed -i -e "s#}{#, #g"  qcd_lumi.json; 
+    sed -i -e "s#, ,#, #g" qcd_lumi.json;
+
+    sed -i -e "s#}{#, #g"  wjet_lumi.json; 
+    sed -i -e "s#, ,#, #g" wjet_lumi.json;
+
+
     echo "Files qcd_lumi.json and wjet_lumi.json were regenerated."
     echo "Now running brilcalc according to the luminosity group recommendation:"
     echo "brilcalc lumi -i qcd_lumi.json -n 0.962"
@@ -62,6 +70,10 @@ elif [ "${1}" = "plot" ]; then
 
     LUMIWJETS=40.240
     LUMIQCD=40.240
+
+    LUMIWJETS=42.6
+    LUMIQCD=42.6
+
 
     # should be 309
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
