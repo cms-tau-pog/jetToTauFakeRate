@@ -149,6 +149,7 @@ namespace utils
   // this is useful to determine how to normalize the events (compute weight)
   unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter);
   void getMCPileupDistributionFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
+  bool isGoodVertex(reco::Vertex& vtx);
   void getMCPileupDistributionFromMiniAODtemp(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
   // To be removed soon
   void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup);

@@ -15,6 +15,8 @@
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "GeneratorInterface/LHEInterface/interface/LHEEvent.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
@@ -208,6 +210,7 @@ int main (int argc, char *argv[])
   bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
   bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
   bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco"));
+  bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
   
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
@@ -251,12 +254,13 @@ int main (int argc, char *argv[])
   //generator level control : add an underflow entry to make sure the histo is kept
   //((TH1F*)mon.addHistogram( new TH1D( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
 
-  // ensure proper normalization
-  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Nev", 4,0.,4.));
+  // ensure proper normalization                                                                                                                                                               
+  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Nev", 5,0.,5.));
   normhist->GetXaxis()->SetBinLabel (1, "Gen. Events");
-  normhist->GetXaxis()->SetBinLabel (2, "Trigger");
-  normhist->GetXaxis()->SetBinLabel (3, "Truthmode");
-  normhist->GetXaxis()->SetBinLabel (4, "Base");
+  normhist->GetXaxis()->SetBinLabel (2, "Events");
+  normhist->GetXaxis()->SetBinLabel (3, "PU central");
+  normhist->GetXaxis()->SetBinLabel (4, "PU up");
+  normhist->GetXaxis()->SetBinLabel (5, "PU down");
 
   //event selection
   TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("wjet_eventflow", ";;Events", 6, 0, 6));
@@ -476,8 +480,22 @@ int main (int argc, char *argv[])
           fflush (stdout);
         }
       
+      double weightGen(1.);
+      if(isNLOMC)
+        {
+          //double weightGen(0.);                                                                                                                                                             
+          //double weightLhe(0.);                                                                                                                                                             
+          
+          fwlite::Handle<GenEventInfoProduct> evt;
+          evt.getByLabel(ev, "generator");
+          if(evt.isValid())
+            {
+              weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+            }
+          
+        }
+      
       std::vector < TString > tags (1, "all");
-      mon.fillHisto("initNorm", tags, 0., 1.);
 
       //##############################################   EVENT LOOP STARTS   ##############################################
       // Not needed anymore with the current way of looping ev.to (iev);              //load the event content from the EDM file
@@ -514,15 +532,24 @@ int main (int argc, char *argv[])
       if (filterOnlySINGLEMU) { jetTrigger = false;                    }
       
       if (!(jetTrigger || muTrigger)){ nSkipped++; continue;}         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-      mon.fillHisto("initNorm", tags, 1., 1.);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
 
 
       //load all the objects we will need to access
       reco::VertexCollection vtx;
+      reco::Vertex goodPV;
+      unsigned int nGoodPV(0);
       fwlite::Handle < reco::VertexCollection > vtxHandle;
       vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
       if (vtxHandle.isValid() ) vtx = *vtxHandle;
+      for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
+        {
+          if(utils::isGoodVertex(vtx[ivtx]))
+            {
+              if(nGoodPV==0) goodPV=vtx[ivtx];
+              nGoodPV++;
+            }
+        }
       
       double rho = 0;
       fwlite::Handle < double >rhoHandle;
@@ -580,7 +607,6 @@ int main (int argc, char *argv[])
       
       
       
-      mon.fillHisto("initNorm", tags, 2., 1.);
       
       //      if(tPt>0 && tbarPt>0 && topPtWgt)
       //        {
@@ -660,14 +686,19 @@ int main (int argc, char *argv[])
           //  {
           //    if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
           //  }
-          ngenITpu=vtx.size();
+          ngenITpu=nGoodPV;
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
           weight = 1.;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
       
-      
+      mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1                                                                  
+      mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1                                                                  
+      mon.fillHisto("initNorm", tags, 2, puWeight);
+      mon.fillHisto("initNorm", tags, 3, TotalWeight_plus);
+      mon.fillHisto("initNorm", tags, 4, TotalWeight_minus);
+
       //
       //
       // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS
@@ -732,7 +763,7 @@ int main (int argc, char *argv[])
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoKin = false;
 
           //Cut based identification 
-          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
+          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
           passVetoId = passId;
 
           //isolation
@@ -803,7 +834,7 @@ int main (int argc, char *argv[])
       //JET/MET ANALYSIS
       //
       //add scale/resolution uncertainties and propagate to the MET      
-      //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);  //FIXME if still needed
+      //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);  //FIXME if still needed
       //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
       
       //select the jets
@@ -863,7 +894,7 @@ int main (int argc, char *argv[])
         wjetTags.push_back("wjet");
 
         // At least one event vertex
-        bool passVtxSelection(vtx.size()>0); // Ask someone about the offlineSkimmedPrimaryVertices collection
+        bool passVtxSelection(nGoodPV); // Ask someone about the offlineSkimmedPrimaryVertices collection
         // One lepton
         bool passLeptonSelection(selLeptons.size()==1 && nVetoLeptons==0); 
         if(passLeptonSelection) passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
@@ -881,7 +912,6 @@ int main (int argc, char *argv[])
         
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
-        mon.fillHisto("initNorm", tags, 3., 1.);
                                                                                            { ctrlCats.push_back("step1"); mon.fillHisto("wjet_eventflow", wjetTags, 0, weight);}
         if(passVtxSelection)                                                               { ctrlCats.push_back("step2"); mon.fillHisto("wjet_eventflow", wjetTags, 1, weight);}
         if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("wjet_eventflow", wjetTags, 2, weight);}
@@ -909,7 +939,7 @@ int main (int argc, char *argv[])
               mon.fillHisto(icat+"recomet_denominator", wjetTags, recoMET.pt(), weight); // Variable number of bins to be implemented
               mon.fillHisto(icat+"eta_denominator",     wjetTags, jet->eta()  , weight);
               mon.fillHisto(icat+"radius_denominator",  wjetTags, jetWidth    , weight);
-              mon.fillHisto(icat+"nvtx_denominator",    wjetTags, vtx.size()  , weight);
+              mon.fillHisto(icat+"nvtx_denominator",    wjetTags, nGoodPV  , weight);
 
               // This must be repeated for each discriminator
               for(size_t l=0; l<tauDiscriminators.size(); ++l){
@@ -931,13 +961,13 @@ int main (int argc, char *argv[])
                 mon.fillHisto(icat+tcat+"recomet_numerator",  wjetTags, recoMET.pt(), weight); // Variable number of bins to be implemented
                 mon.fillHisto(icat+tcat+"eta_numerator",      wjetTags, jet->eta()  , weight);
                 mon.fillHisto(icat+tcat+"radius_numerator",   wjetTags, jetWidth    , weight);
-                mon.fillHisto(icat+tcat+"nvtx_numerator",     wjetTags, vtx.size()  , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",     wjetTags, nGoodPV  , weight);
               }
             }
 
           
           // Some control plots, mostly on event selection
-          mon.fillHisto(icat+"nvtx",    wjetTags,  vtx.size(), weight);
+          mon.fillHisto(icat+"nvtx",    wjetTags,  nGoodPV, weight);
           if(selLeptons.size()>0)
             mon.fillHisto(icat+"ptmu",    wjetTags,  selLeptons[0].pt(), weight);
           for(pat::JetCollection::iterator jet=selWJetsJets.begin(); jet!=selWJetsJets.end(); ++jet)
@@ -962,7 +992,7 @@ int main (int argc, char *argv[])
 
 
         // At least one event vertex
-        bool passVtxSelection(vtx.size()>0); // Ask someone about the offlineSkimmedPrimaryVertices collection
+        bool passVtxSelection(nGoodPV); // Ask someone about the offlineSkimmedPrimaryVertices collection
         // At least two jets
         // Insert trigger matching here, which will fix the incomplete jet selection step
         bool passJetSelection(selQCDJets.size()>1);
@@ -1005,7 +1035,6 @@ int main (int argc, char *argv[])
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-        mon.fillHisto("initNorm", tags, 3., 1.);
                                                  { ctrlCats.push_back ("step1"); mon.fillHisto("qcd_eventflow", qcdTags, 0, weight);}
         if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("qcd_eventflow", qcdTags, 1, weight);}
         if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("qcd_eventflow", qcdTags, 2, weight);}
@@ -1038,7 +1067,7 @@ int main (int argc, char *argv[])
               mon.fillHisto(icat+"recomet_denominator", qcdTags, recoMET.pt(), weight); // Variable number of bins to be implemented
               mon.fillHisto(icat+"eta_denominator",     qcdTags, jet->eta()  , weight);
               mon.fillHisto(icat+"radius_denominator",  qcdTags, jetWidth    , weight);
-              mon.fillHisto(icat+"nvtx_denominator",    qcdTags, vtx.size()  , weight);
+              mon.fillHisto(icat+"nvtx_denominator",    qcdTags, nGoodPV     , weight);
               
               // This must be repeated for each discriminator
               for(size_t l=0; l<tauDiscriminators.size(); ++l){
@@ -1059,12 +1088,12 @@ int main (int argc, char *argv[])
                 mon.fillHisto(icat+tcat+"recomet_numerator", qcdTags, recoMET.pt(), weight); // Variable number of bins to be implemented
                 mon.fillHisto(icat+tcat+"eta_numerator",     qcdTags, jet->eta()   , weight);
                 mon.fillHisto(icat+tcat+"radius_numerator",  qcdTags, jetWidth     , weight);
-                mon.fillHisto(icat+tcat+"nvtx_numerator",    qcdTags, vtx.size()   , weight);
+                mon.fillHisto(icat+tcat+"nvtx_numerator",    qcdTags, nGoodPV     , weight);
                 
               }
             }
           // Some control plots, mostly on event selection
-          mon.fillHisto(icat+"nvtx",    qcdTags,  vtx.size(), weight);
+          mon.fillHisto(icat+"nvtx",    qcdTags,  nGoodPV, weight);
           if(selLeptons.size()>0)
             mon.fillHisto(icat+"ptmu",    qcdTags,  selLeptons[0].pt(), weight);
           for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet)

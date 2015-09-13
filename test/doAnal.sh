@@ -10,6 +10,7 @@ JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15_improved_2/
+OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15_50ns/
 
 if [ "${1}" = "submit" ]; then
     # cleanup (comment it out if you have smaller jsons for running only on a few sets while the others are OK
