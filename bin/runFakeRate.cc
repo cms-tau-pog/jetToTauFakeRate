@@ -430,8 +430,8 @@ int main (int argc, char *argv[])
     {
       FakeRateAnalysis* anal = *ianal;
       cout << "Processing anal: " << anal->name();
-      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15/plotter_")+anal->rawname()+TString(".root"));
-      cout << " using file " << "~/www/13TeV_tauFakes_spring15/plotter_" << anal->rawname() << ".root" << endl;
+      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15_50ns/plotter_")+anal->rawname()+TString(".root"));
+      cout << " using file " << "~/www/13TeV_tauFakes_spring15_50ns/plotter_" << anal->rawname() << ".root" << endl;
       
       for(TauDiscriminatorSetCollection::iterator idiscr=discriminators.begin(); idiscr!=discriminators.end(); ++idiscr)
         {
@@ -624,10 +624,10 @@ int main (int argc, char *argv[])
             } // End loop on FakesVariableCollection
         } // End loop on TauDiscriminatorSetCollection
     } // End loop on FakeRateAnalysisCollection
-  gSystem->Exec("mkdir -p ${HOME}/www/13TeV_tauFakes_spring15/");
-  gSystem->Exec("rm -r ${HOME}/www/13TeV_tauFakes_spring15/devel/");
+  gSystem->Exec("mkdir -p ${HOME}/www/13TeV_tauFakes_spring15_50ns/");
+  gSystem->Exec("rm -r ${HOME}/www/13TeV_tauFakes_spring15_50ns/devel/");
   gSystem->Exec("cp ${HOME}/www/HIG-13-026/index.php devel/");
-  gSystem->Exec("mv devel/ ${HOME}/www/13TeV_tauFakes_spring15/");
+  gSystem->Exec("mv devel/ ${HOME}/www/13TeV_tauFakes_spring15_50ns/");
   
   exit(0);  
 }

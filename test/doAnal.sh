@@ -56,6 +56,7 @@ elif [ "${1}" = "lumi" ]; then
 
 elif [ "${1}" = "plot" ]; then
     DIR=~/www/13TeV_tauFakes_spring15/
+    DIR=~/www/13TeV_tauFakes_spring15_50ns/
     mkdir -p ${DIR}
     mkdir -p ~/www/temptemp/
     mv ${DIR}*vischia*pdf ~/www/temptemp/
