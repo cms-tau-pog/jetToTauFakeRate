@@ -451,6 +451,11 @@ int main (int argc, char *argv[])
   //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
   
   
+
+
+
+
+
   //##############################################
   //########           EVENT LOOP         ########
   //##############################################
@@ -525,14 +530,30 @@ int main (int argc, char *argv[])
       //      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*")); // It is unprescaled
       // Turns out that the only single jet trigger available for those samples is HLT_PFJet260, which has L1 prescale =1 but HLT prescale=170.
       bool jetTrigger  (utils::passTriggerPatterns(tr, "HLT_PFJet260_v*"));
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*"));
-      
+      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*"));
+
+      /* Available in miniaod v2      
+         HLT_PFJet40_v1
+         HLT_PFJet60_v1
+         HLT_PFJet80_v1
+         HLT_PFJet140_v1
+         HLT_PFJet200_v1
+         HLT_PFJet260_v1
+         HLT_PFJet320_v1
+         HLT_PFJet400_v1
+         HLT_PFJet450_v1
+         HLT_PFJet500_v1
+      */
 
       if (filterOnlyJETHT)    {                     muTrigger = false; }
       if (filterOnlySINGLEMU) { jetTrigger = false;                    }
       
       if (!(jetTrigger || muTrigger)){ nSkipped++; continue;}         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
+
+
+      // // -------------- Apply MET filters -------------------
+      // if( !isMC && !metFiler.passMetFilter(ev)) continue;
 
 
       //load all the objects we will need to access
