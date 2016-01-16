@@ -7,10 +7,9 @@
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjetsonly.json
-#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json
-OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15/
-OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15_improved_2/
-OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results_spring15_50ns/
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json#
+#OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes/
+OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes8nm/
 
 if [ "${1}" = "submit" ]; then
     # cleanup (comment it out if you have smaller jsons for running only on a few sets while the others are OK
@@ -18,7 +17,7 @@ if [ "${1}" = "submit" ]; then
     # recreate
     mkdir -p ${OUTDIR}
     
-    runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 1nh
+    runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nm
     
 elif [ "${1}" = "lumi" ]; then
     rm qcd_lumi.json
@@ -55,8 +54,7 @@ elif [ "${1}" = "lumi" ]; then
     runAnalysisOverSamples.py -e extractLumiJSON -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
 
 elif [ "${1}" = "plot" ]; then
-    DIR=~/www/13TeV_tauFakes_spring15/
-    DIR=~/www/13TeV_tauFakes_spring15_50ns/
+    DIR=~/www/13TeV_tauFakes_25ns/
     mkdir -p ${DIR}
     mkdir -p ~/www/temptemp/
     mv ${DIR}*vischia*pdf ~/www/temptemp/
@@ -64,20 +62,9 @@ elif [ "${1}" = "plot" ]; then
     mv ~/www/temptemp/* ${DIR}
     cp ~/www/HIG-13-026/index.php ${DIR}
     
-    LUMIWJETS=16.670
-    #LUMIWJETS=333.4
-    # should be 470
-    LUMIQCD=19.226
-    #LUMIQCD=144.19
+    LUMIWJETS=2136
+    LUMIQCD=2136
 
-    LUMIWJETS=40.240
-    LUMIQCD=40.240
-
-    LUMIWJETS=42.6
-    LUMIQCD=42.6
-
-
-    # should be 309
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
     JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
     #INDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/results/
@@ -95,9 +82,7 @@ elif [ "${1}" = "plot" ]; then
     # QCD
     runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}
 
-
-
-    DIR=~/www/13TeV_tauFakes_spring15_split/
+    DIR=~/www/13TeV_tauFakes_25ns_split/
     mkdir -p ${DIR}
     mkdir -p ~/www/temptemp/
     mv ${DIR}*vischia*pdf ~/www/temptemp/
