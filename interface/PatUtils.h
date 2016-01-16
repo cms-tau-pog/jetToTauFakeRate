@@ -31,6 +31,9 @@
 #include "TauAnalysis/JetToTauFakeRate/interface/MacroUtils.h"
 #include "TauAnalysis/JetToTauFakeRate/interface/LumiUtils.h"
 
+// Electron ID
+#include "RecoEgamma/ElectronIdentification/interface/VersionedPatElectronSelector.h"
+
 #include <vector>
 #include "TVector3.h"
 #include "TMath.h"
@@ -47,28 +50,62 @@ namespace patUtils
       public:
       // constructor
       ~GenericLepton(){};
-       GenericLepton(pat::Electron el_) : pat::GenericParticle(el_){el = el_; };
-       GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_){mu = mu_; };
+       GenericLepton(pat::Electron el_) : pat::GenericParticle(el_) {el = el_; };
+       GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_) {mu = mu_; };
+       GenericLepton(pat::Tau     tau_) : pat::GenericParticle(tau_){tau = tau_; };
          pat::Electron el;
          pat::Muon     mu;
+	 pat::Tau     tau;
    };
 
    namespace llvvElecId { enum ElecId  {Veto, Loose, Medium, Tight, LooseMVA, MediumMVA, TightMVA}; }
-   namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight, StdLoose, StdSoft, StdTight}; }
+   namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight, StdLoose, StdSoft, StdMedium, StdTight}; }
    namespace llvvPhotonId { enum PhotonId  {Loose, Medium, Tight}; }
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
 
-   bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel);
+   bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el);
+   bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel); // Old PHYS14 ID
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
-   bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0);
+   float relIso(patUtils::GenericLepton& lep, double rho);
+   bool passIso (VersionedPatElectronSelector id, pat::Electron& el);
+   bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0); // Old PHYS15 Iso
    bool passIso(pat::Muon&     mu,  int IsoLevel);
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
+   bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale); 
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
 
    bool exclusiveDataEventFilter(const double&run, const bool& isMC, const bool& isPromptReco);
+
+
+
+   class MetFilter{
+    private :
+     struct RuLuEv {
+        unsigned int Run;  unsigned int Lumi;  unsigned int Event;
+        RuLuEv(unsigned int Run_, unsigned int Lumi_, unsigned int Event_){ Run = Run_; Lumi = Lumi_; Event = Event_;}
+        bool operator==(const RuLuEv &other) const { return (Run == other.Run && Lumi == other.Lumi && Event == other.Event); }
+     };
+     struct RuLuEvHasher{
+         std::size_t operator()(const RuLuEv& k) const{ using std::size_t; using std::hash;  using std::string;
+            return ((hash<unsigned int>()(k.Run) ^ (hash<unsigned int>()(k.Lumi) << 1)) >> 1) ^ (hash<unsigned int>()(k.Event) << 1);
+         }
+     };
+
+     typedef std::unordered_map<RuLuEv, int, RuLuEvHasher> MetFilterMap;
+     MetFilterMap map;
+    public :
+     MetFilter(){}
+     ~MetFilter(){}
+     void Clear(){map.clear();}
+     void FillBadEvents(std::string path);
+     int  passMetFilterInt(const fwlite::Event& ev);
+     bool passMetFilter(const fwlite::Event& ev);
+   };
+
+
 
 }
 
