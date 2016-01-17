@@ -292,16 +292,10 @@ int main (int argc, char *argv[])
   std::vector<TString> tauDiscriminators;
   tauDiscriminators.clear();
 
+
   tauDiscriminators.push_back("byLooseCombinedIsolationDeltaBetaCorr3Hits");
   tauDiscriminators.push_back("byMediumCombinedIsolationDeltaBetaCorr3Hits");
   tauDiscriminators.push_back("byTightCombinedIsolationDeltaBetaCorr3Hits");
-  
-  tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwoLT");
-  tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwoLT");
-  tauDiscriminators.push_back("byMediumIsolationMVA3oldDMwoLT");
-  tauDiscriminators.push_back("byTightIsolationMVA3oldDMwoLT");
-  tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwoLT");
-  tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwoLT");
   
   tauDiscriminators.push_back("byVLooseIsolationMVA3oldDMwLT");
   tauDiscriminators.push_back("byLooseIsolationMVA3oldDMwLT");
@@ -309,14 +303,7 @@ int main (int argc, char *argv[])
   tauDiscriminators.push_back("byTightIsolationMVA3oldDMwLT");
   tauDiscriminators.push_back("byVTightIsolationMVA3oldDMwLT");
   tauDiscriminators.push_back("byVVTightIsolationMVA3oldDMwLT");
-  
-  tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwoLT");
-  tauDiscriminators.push_back("byLooseIsolationMVA3newDMwoLT");
-  tauDiscriminators.push_back("byMediumIsolationMVA3newDMwoLT");
-  tauDiscriminators.push_back("byTightIsolationMVA3newDMwoLT");
-  tauDiscriminators.push_back("byVTightIsolationMVA3newDMwoLT");
-  tauDiscriminators.push_back("byVVTightIsolationMVA3newDMwoLT");
-  
+
   tauDiscriminators.push_back("byVLooseIsolationMVA3newDMwLT");
   tauDiscriminators.push_back("byLooseIsolationMVA3newDMwLT");
   tauDiscriminators.push_back("byMediumIsolationMVA3newDMwLT");
@@ -390,10 +377,10 @@ int main (int argc, char *argv[])
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK5PFchs.txt").Data ());
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
 
   //muon energy scale and uncertainties
-  // MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
+  //MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -506,7 +493,7 @@ int main (int argc, char *argv[])
       // Not needed anymore with the current way of looping ev.to (iev);              //load the event content from the EDM file
       //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
 
-      if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+      ///if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
 
       // Skip bad lumi                                                                                                                              
       if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue;
@@ -548,9 +535,12 @@ int main (int argc, char *argv[])
       if (filterOnlyJETHT)    {                     muTrigger = false; }
       if (filterOnlySINGLEMU) { jetTrigger = false;                    }
       
+      if(debug) cout << "Triggers: jet " << jetTrigger << ", muon " << muTrigger << endl;
+
       if (!(jetTrigger || muTrigger)){ nSkipped++; continue;}         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
 
+      if(debug) cout << "Event passed at least one trigger: jet " << jetTrigger << ", muon " << muTrigger << endl;
 
       // // -------------- Apply MET filters -------------------
       // if( !isMC && !metFiler.passMetFilter(ev)) continue;
@@ -701,15 +691,15 @@ int main (int argc, char *argv[])
         {
           int ngenITpu = 0;
           
-          //fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-          //puInfoH.getByLabel (ev, "addPileupInfo");
-          //for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-          //  {
-          //    if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-          //  }
-          ngenITpu=nGoodPV;
+          fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+          puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
+          for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+            {
+              if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+            }
+          //ngenITpu=nGoodPV; // based on nvtx
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight = 1.;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
+          weight *= puWeight;
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
@@ -881,7 +871,7 @@ int main (int argc, char *argv[])
           bool passLooseSimplePuId = true;      //FIXME --> Need to be updated according to the latest recipe
           if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.5) continue;
 
-          bool hasCSVtag( jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertezV2BJetTags") > btagLoose );
+          bool hasCSVtag( jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose );
 
           selQCDJets.push_back(jets[ijet]);
           if(hasCSVtag)
@@ -1206,7 +1196,7 @@ int main (int argc, char *argv[])
               if (!isMC) continue;
               if (!varyBtagUp && !varyBtagDown) continue;
               int flavId = jets[ijet].partonFlavour();
-              bool hasCSVtag (jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags") > 0.405);
+              bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
               if (varyBtagUp)
                 {
                   if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
