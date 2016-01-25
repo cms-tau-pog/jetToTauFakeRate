@@ -392,10 +392,11 @@ int main (int argc, char *argv[])
 
   TauDiscriminatorSetCollection discriminators;
   
+  // "woLT" discriminators not supported anymore
   discriminators.push_back( new TauDiscriminatorSet("CombinedIsolationDeltaBetaCorr3Hits", "HPS #delta#beta 3-hit") );
-  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3oldDMwoLT",              "HPS MVA old woLT"     ) );
+  //  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3oldDMwoLT",              "HPS MVA old woLT"     ) );
   discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3oldDMwLT" ,              "HPS MVA old wLT"      ) ); 
-  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3newDMwoLT",              "HPS MVA new woLT"     ) ); 
+  //  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3newDMwoLT",              "HPS MVA new woLT"     ) ); 
   discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3newDMwLT" ,              "HPS MVA new wLT"      ) ); 
 
   FakeRateAnalysisCollection analyses;
@@ -430,8 +431,8 @@ int main (int argc, char *argv[])
     {
       FakeRateAnalysis* anal = *ianal;
       cout << "Processing anal: " << anal->name();
-      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15_50ns/plotter_")+anal->rawname()+TString(".root"));
-      cout << " using file " << "~/www/13TeV_tauFakes_spring15_50ns/plotter_" << anal->rawname() << ".root" << endl;
+      TFile* f = TFile::Open(inDir+TString("/plotter_")+anal->rawname()+TString(".root"));
+      cout << " using file " << inDir << "/plotter_" << anal->rawname() << ".root" << endl;
       
       for(TauDiscriminatorSetCollection::iterator idiscr=discriminators.begin(); idiscr!=discriminators.end(); ++idiscr)
         {
@@ -624,10 +625,10 @@ int main (int argc, char *argv[])
             } // End loop on FakesVariableCollection
         } // End loop on TauDiscriminatorSetCollection
     } // End loop on FakeRateAnalysisCollection
-  gSystem->Exec("mkdir -p ${HOME}/www/13TeV_tauFakes_spring15_50ns/");
-  gSystem->Exec("rm -r ${HOME}/www/13TeV_tauFakes_spring15_50ns/devel/");
+  gSystem->Exec(TString("mkdir -p ")+inDir);
+  gSystem->Exec(TString("rm -r ")+inDir+TString("/")+outDir);
   gSystem->Exec("cp ${HOME}/www/HIG-13-026/index.php devel/");
-  gSystem->Exec("mv devel/ ${HOME}/www/13TeV_tauFakes_spring15_50ns/");
+  gSystem->Exec(TString("mv devel/ ")+inDir+TString("/")+outDir);
   
   exit(0);  
 }
