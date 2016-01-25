@@ -402,21 +402,21 @@ int main (int argc, char *argv[])
   FakeRateAnalysisCollection analyses;
 
   // Quark-jets selection
-  analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
-  
-  // Gluon-jets selection
-  analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
-
+//  analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
+//  
+//  // Gluon-jets selection
+//  analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
+//
   analyses.push_back( new FakeRateAnalysis("qcd_qonly", doData) ); // Compute fakes for wjets MC only
-  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
-  analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
-  analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
-
-  analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
-  analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
-  analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
-  
-
+  //  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
+//  analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
+//  analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
+//
+//  analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
+//  analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
+//  analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
+//  
+//
 
   FakesVariableCollection vars;
   vars.push_back( new FakesVariable("pt"     , 1) );
@@ -454,12 +454,13 @@ int main (int argc, char *argv[])
               for(size_t isample = 0; isample<anal->nsamples(); ++isample)
                 {
                   TString sample(anal->sample(isample));
-                  cout << "\t \t \t Processing sample: " << sample  << endl;
+                  cout << "\t \t \t Processing sample: " << sample  << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator") << endl;
                   // Denominator is common (independent on tauID)
                   if(!denominator)
                     denominator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"));
                   else
                     denominator ->Add((TH1*) f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"))); 
+                
                 }
               
               if(doData)
@@ -479,7 +480,7 @@ int main (int argc, char *argv[])
                   for(size_t isample = 0; isample<anal->nsamples(); ++isample)
                     {
                       TString sample(anal->sample(isample));
-                      cout << "\t \t \t \t Processing sample: " << sample << endl;
+                      cout << "\t \t \t \t Processing sample: " << sample << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator") << endl;
                       if(!temp_numerator)
                         temp_numerator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"));    
                       else
