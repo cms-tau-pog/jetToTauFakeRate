@@ -8,7 +8,7 @@
       "destination":"wjets selection",
       "twikixsec":"20508.9",
       "data":[
-        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":61526.7       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9        , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
       ]
     },
     { 
@@ -43,9 +43,11 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-        { "dtag":"Data13TeV_SingleMuon2015BPromptReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015BReReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-17Jul2015-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" }
-            ]             
+        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
+      ]                   
     }       
   ]
 }
