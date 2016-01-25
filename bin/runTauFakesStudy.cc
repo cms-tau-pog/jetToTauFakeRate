@@ -804,7 +804,8 @@ int main (int argc, char *argv[])
           //      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
           //      if(tau.emFraction() >=2.) continue;
           
-          if(!tau.tauID("decayModeFindingNewDMs")) continue; // High pt tau. Otherwise, OldDMs
+          //// FIXME: run both at the same time if(!tau.tauID("decayModeFindingNewDMs")) continue; // High pt tau. Otherwise, OldDMs
+          if(!tau.tauID("decayModeFindingOldDMs")) continue; // Default 
           // Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
           
           //if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
