@@ -135,6 +135,9 @@ def CreateTheShellFile(argv):
             shell_file.write('export VO_CMS_SW_DIR='+os.getenv("VO_CMS_SW_DIR","/nfs/soft/cms")+'\n')            
 	#shell_file.write('source /nfs/soft/cms/cmsset_default.sh\n')
 
+        if 'geol.uniovi.es' in hostname:
+            shell_file.write('source $VO_CMS_SW_DIR/cmsset_default.sh\n')
+
 	shell_file.write('cd ' + os.getcwd() + '\n')
 	shell_file.write('eval `scramv1 runtime -sh`\n')
 
