@@ -5,11 +5,14 @@
 # 1: run the analysis (must merge submit script here)
 
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd.json
+### JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjetsonly.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json#
 
 QUEUE=1nh
+#OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes_data/
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes/
 #QUEUE=8nm
 #OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes8nm/
@@ -27,25 +30,40 @@ elif [ "${1}" = "lumi" ]; then
     rm wjet_lumi.json
     cat ${OUTDIR}/*JetHT*json > qcd_lumi.json
     cat ${OUTDIR}/*SingleMuon*json > wjet_lumi.json
+    
+    STARTINGJSON="data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    sed -i -e "s#}{#,#g"  qcd_lumi.json; 
+    sed -i -e "s#, ,#,#g" qcd_lumi.json;
+    sed -i -e "s#,,#,#g"  qcd_lumi.json;
+    sed -i -e "s#,,#,#g"  qcd_lumi.json;
+    sed -i -e "s#,,#,#g"  qcd_lumi.json;
+    sed -i -e "s#,,#,#g"  qcd_lumi.json;
+    sed -i -e "s#,,#,#g"  qcd_lumi.json;
+    sed -i -e "s#,,#,#g"  qcd_lumi.json;
+    sed -i -e "s#{,#{#g"  qcd_lumi.json;
 
-    sed -i -e "s#}{#, #g"  qcd_lumi.json; 
-    sed -i -e "s#, ,#, #g" qcd_lumi.json;
+    sed -i -e "s#}{#,#g"  wjet_lumi.json; 
+    sed -i -e "s#, ,#,#g" wjet_lumi.json;
+    sed -i -e "s#,,#,#g"  wjet_lumi.json;
+    sed -i -e "s#,,#,#g"  wjet_lumi.json;
+    sed -i -e "s#,,#,#g"  wjet_lumi.json;
+    sed -i -e "s#,,#,#g"  wjet_lumi.json;
+    sed -i -e "s#,,#,#g"  wjet_lumi.json;
+    sed -i -e "s#,,#,#g"  wjet_lumi.json;
+    sed -i -e "s#{,#{#g"  wjet_lumi.json;
 
-    sed -i -e "s#}{#, #g"  wjet_lumi.json; 
-    sed -i -e "s#, ,#, #g" wjet_lumi.json;
-
-
-    echo "Files qcd_lumi.json and wjet_lumi.json were regenerated."
-    echo "Now running brilcalc according to the luminosity group recommendation:"
-    echo "brilcalc lumi -i qcd_lumi.json -n 0.962"
-    export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
-    brilcalc lumi -i qcd_lumi.json -n 0.962
-    echo "brilcalc lumi -i wjet_lumi.json -n 0.962"
-    export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
-    brilcalc lumi -i wjet_lumi.json -n 0.962
+    export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH 
+    ### Official v1 brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i myjson.json
+    brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json  -i wjet_lumi.json
+    echo "DONE WJET"
+    brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json  -i qcd_lumi.json
+    echo "DONE QCD"
+    echo "Take care. This uses the offline tag V2, which is not yet blessed by Physics Coordinators https://hypernews.cern.ch/HyperNews/CMS/get/luminosity/544.html "
     echo "To be compared with the output of the full json:"
-    echo "brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt -n 0.962"
-    brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt -n 0.962
+    echo "brilcalc lumi --normtag ${STARTINGJSON}"
+    brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json -i ${STARTINGJSON}
+    echo "DONE FULL"
+    echo "Take care. This uses the offline tag V2, which is not yet blessed by Physics Coordinators https://hypernews.cern.ch/HyperNews/CMS/get/luminosity/544.html "
 
     exit 0
     JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
@@ -64,9 +82,14 @@ elif [ "${1}" = "plot" ]; then
     rm -r ${DIR}*
     mv ~/www/temptemp/* ${DIR}
     cp ~/www/HIG-13-026/index.php ${DIR}
-    
+
+    # Different tests
     LUMIWJETS=2136
     LUMIQCD=2136
+    LUMIWJETS=307
+    LUMIQCD=277
+    LUMIWJETS=336
+    LUMIQCD=729
 
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
     JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
@@ -80,12 +103,14 @@ elif [ "${1}" = "plot" ]; then
     
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
 
     # QCD
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
 
     DIR=~/www/13TeV_tauFakes_25ns_split/
+    PLOTTERWJETS=${DIR}plotter_wjet.root
+    PLOTTERQCD=${DIR}plotter_qcd.root
     mkdir -p ${DIR}
     mkdir -p ~/www/temptemp/
     mv ${DIR}*vischia*pdf ~/www/temptemp/
@@ -97,10 +122,10 @@ elif [ "${1}" = "plot" ]; then
 
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
 
     # QCD
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}
+    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
 
 
  
@@ -115,6 +140,12 @@ elif [ "${1}" = "plot" ]; then
         mv ${DIR}temp${CHAN}/ ${DIR}${CHAN}/
         cp ~/www/HIG-13-026/index.php ${DIR}${CHAN}/
     done
+
+elif [ "${1}" = "harvest" ]; then
+    # Fix. --plotExt does not really impact (extensions are multiple and hardcoded)
+    # Configurable input directory
+    runFakeRate --inDir ~/www/13TeV_tauFakes_25ns/ --outDir fakerate --plotExt .png
+
 fi
 
 # Done!

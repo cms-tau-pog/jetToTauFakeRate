@@ -392,30 +392,31 @@ int main (int argc, char *argv[])
 
   TauDiscriminatorSetCollection discriminators;
   
+  // "woLT" discriminators not supported anymore
   discriminators.push_back( new TauDiscriminatorSet("CombinedIsolationDeltaBetaCorr3Hits", "HPS #delta#beta 3-hit") );
-  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3oldDMwoLT",              "HPS MVA old woLT"     ) );
+  //  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3oldDMwoLT",              "HPS MVA old woLT"     ) );
   discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3oldDMwLT" ,              "HPS MVA old wLT"      ) ); 
-  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3newDMwoLT",              "HPS MVA new woLT"     ) ); 
+  //  discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3newDMwoLT",              "HPS MVA new woLT"     ) ); 
   discriminators.push_back( new TauDiscriminatorSet("IsolationMVA3newDMwLT" ,              "HPS MVA new wLT"      ) ); 
 
   FakeRateAnalysisCollection analyses;
 
   // Quark-jets selection
-  analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
-  
-  // Gluon-jets selection
-  analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
-
+//  analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
+//  
+//  // Gluon-jets selection
+//  analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
+//
   analyses.push_back( new FakeRateAnalysis("qcd_qonly", doData) ); // Compute fakes for wjets MC only
-  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
-  analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
-  analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
-
-  analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
-  analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
-  analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
-  
-
+  //  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
+//  analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
+//  analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
+//
+//  analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
+//  analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
+//  analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
+//  
+//
 
   FakesVariableCollection vars;
   vars.push_back( new FakesVariable("pt"     , 1) );
@@ -430,8 +431,8 @@ int main (int argc, char *argv[])
     {
       FakeRateAnalysis* anal = *ianal;
       cout << "Processing anal: " << anal->name();
-      TFile* f = TFile::Open(TString("~/www/13TeV_tauFakes_spring15_50ns/plotter_")+anal->rawname()+TString(".root"));
-      cout << " using file " << "~/www/13TeV_tauFakes_spring15_50ns/plotter_" << anal->rawname() << ".root" << endl;
+      TFile* f = TFile::Open(inDir+TString("/plotter_")+anal->rawname()+TString(".root"));
+      cout << " using file " << inDir << "/plotter_" << anal->rawname() << ".root" << endl;
       
       for(TauDiscriminatorSetCollection::iterator idiscr=discriminators.begin(); idiscr!=discriminators.end(); ++idiscr)
         {
@@ -453,12 +454,13 @@ int main (int argc, char *argv[])
               for(size_t isample = 0; isample<anal->nsamples(); ++isample)
                 {
                   TString sample(anal->sample(isample));
-                  cout << "\t \t \t Processing sample: " << sample  << endl;
+                  cout << "\t \t \t Processing sample: " << sample  << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator") << endl;
                   // Denominator is common (independent on tauID)
                   if(!denominator)
                     denominator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"));
                   else
                     denominator ->Add((TH1*) f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"))); 
+                
                 }
               
               if(doData)
@@ -478,7 +480,7 @@ int main (int argc, char *argv[])
                   for(size_t isample = 0; isample<anal->nsamples(); ++isample)
                     {
                       TString sample(anal->sample(isample));
-                      cout << "\t \t \t \t Processing sample: " << sample << endl;
+                      cout << "\t \t \t \t Processing sample: " << sample << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator") << endl;
                       if(!temp_numerator)
                         temp_numerator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"));    
                       else
@@ -624,10 +626,10 @@ int main (int argc, char *argv[])
             } // End loop on FakesVariableCollection
         } // End loop on TauDiscriminatorSetCollection
     } // End loop on FakeRateAnalysisCollection
-  gSystem->Exec("mkdir -p ${HOME}/www/13TeV_tauFakes_spring15_50ns/");
-  gSystem->Exec("rm -r ${HOME}/www/13TeV_tauFakes_spring15_50ns/devel/");
+  gSystem->Exec(TString("mkdir -p ")+inDir);
+  gSystem->Exec(TString("rm -r ")+inDir+TString("/")+outDir);
   gSystem->Exec("cp ${HOME}/www/HIG-13-026/index.php devel/");
-  gSystem->Exec("mv devel/ ${HOME}/www/13TeV_tauFakes_spring15_50ns/");
+  gSystem->Exec(TString("mv devel/ ")+inDir+TString("/")+outDir);
   
   exit(0);  
 }
