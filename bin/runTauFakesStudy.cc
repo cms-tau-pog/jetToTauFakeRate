@@ -377,7 +377,7 @@ int main (int argc, char *argv[])
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/Summer15_25nsV7_DATA_UncertaintySources_AK4PFchs.txt").Data());
 
   //muon energy scale and uncertainties
   //MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
@@ -504,19 +504,17 @@ int main (int argc, char *argv[])
         return false;
 
       
-//if(iev <100 && iev >95)
-//  {
-//  cout << "AVAILABLE TRIGGER BITS" << endl;
-//  //std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_*Jet*");
-//  std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_PFJet*");
-//    for(size_t t=0;t<matches.size();t++)
-//    cout << "\t\t\t" << matches[t]->c_str() << endl;
-//  }
-//  
-//
-      //      bool jetTrigger (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*")); // It is unprescaled
-      // Turns out that the only single jet trigger available for those samples is HLT_PFJet260, which has L1 prescale =1 but HLT prescale=170.
-      bool jetTrigger  (utils::passTriggerPatterns(tr, "HLT_PFJet260_v*"));
+      if(debug && iev <100 && iev >95)
+        {
+        cout << "AVAILABLE TRIGGER BITS" << endl;
+        //std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_*Jet*");
+        std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(tr.triggerNames(), "HLT_PFJet*");
+          for(size_t t=0;t<matches.size();t++)
+          cout << "\t\t\t" << matches[t]->c_str() << endl;
+        }
+        
+      
+      bool jetTrigger  (utils::passTriggerPatterns(tr, "HLT_PFJet450_v*"));
       bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*"));
 
       /* Available in miniaod v2      
@@ -804,8 +802,8 @@ int main (int argc, char *argv[])
           //      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
           //      if(tau.emFraction() >=2.) continue;
           
-          //// FIXME: run both at the same time if(!tau.tauID("decayModeFindingNewDMs")) continue; // High pt tau. Otherwise, OldDMs
-          if(!tau.tauID("decayModeFindingOldDMs")) continue; // Default 
+          //if(!tau.tauID("decayModeFindingNewDMs")) continue; // High pt tau. Otherwise, OldDMs (but it not included anymore in miniAOD)
+          if(!tau.tauID("decayModeFinding")) continue;
           // Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
           
           //if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
@@ -852,6 +850,7 @@ int main (int argc, char *argv[])
       //select the jets
       pat::JetCollection
         selWJetsJets, selQCDJets,
+        selHardJets,
         selWJetsBJets, selQCDBJets;
       for (size_t ijet = 0; ijet < jets.size(); ijet++)
         {
@@ -880,12 +879,14 @@ int main (int argc, char *argv[])
 
           if (minDRlj < 0.7) continue;
           selWJetsJets.push_back(jets[ijet]);
+          if(jets[ijet].pt()>40)
+            selHardJets.push_back(jets[ijet]);
           if(hasCSVtag)
             selWJetsBJets.push_back(jets[ijet]);
         }
       std::sort (selWJetsJets.begin(),  selWJetsJets.end(),  utils::sort_CandidatesByPt);
       std::sort (selQCDJets.begin(),  selQCDJets.end(),  utils::sort_CandidatesByPt);
-      
+      std::sort (selHardJets.begin(), selHardJets.end(), utils::sort_CandidatesByPt);
       
       // Event classification and analyses
       //if(muTrigger)  tags.push_back("wjets");
@@ -921,6 +922,8 @@ int main (int argc, char *argv[])
         // At least one jet not overlapping with the muon
         bool passJetSelection(selWJetsJets.size()>0);
         bool passBtagSelection(selWJetsBJets.size()==0); // Kill ttbar component
+        bool passHardJetsSelection(selHardJets.size()<2);
+        
         
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
@@ -929,7 +932,7 @@ int main (int argc, char *argv[])
         if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("wjet_eventflow", wjetTags, 2, weight);}
         if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("wjet_eventflow", wjetTags, 3, weight);}
         if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("wjet_eventflow", wjetTags, 4, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection && passBtagSelection) { ctrlCats.push_back("step6"); mon.fillHisto("wjet_eventflow", wjetTags, 5, weight);} 
+        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection && passBtagSelection && passHardJetsSelection) { ctrlCats.push_back("step6"); mon.fillHisto("wjet_eventflow", wjetTags, 5, weight);} 
         
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
