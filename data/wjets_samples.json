@@ -8,7 +8,7 @@
       "destination":"wjets selection",
       "twikixsec":"20508.9",
       "data":[
-        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9        , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_WJets_NLO"                            , "split":100, "xsec":20508.9        , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
       ]
     },
     { 
