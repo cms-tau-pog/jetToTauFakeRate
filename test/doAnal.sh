@@ -5,6 +5,7 @@
 # 1: run the analysis (must merge submit script here)
 
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples_wjet.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd.json
 ### JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
@@ -12,10 +13,13 @@ JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json#
 
 QUEUE=1nh
-#OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes_data/
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes/
 #QUEUE=8nm
 #OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes8nm/
+
+
+BASEWEBDIR=~/www/13TeV_tauFakes_25ns
+
 
 if [ "${1}" = "submit" ]; then
     # cleanup (comment it out if you have smaller jsons for running only on a few sets while the others are OK
@@ -75,7 +79,7 @@ elif [ "${1}" = "lumi" ]; then
     runAnalysisOverSamples.py -e extractLumiJSON -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
 
 elif [ "${1}" = "plot" ]; then
-    DIR=~/www/13TeV_tauFakes_25ns/
+    DIR="${BASEWEBDIR}/"
     mkdir -p ${DIR}
     mkdir -p ~/www/temptemp/
     mv ${DIR}*vischia*pdf ~/www/temptemp/
@@ -103,12 +107,12 @@ elif [ "${1}" = "plot" ]; then
     
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
+    runFixedPlotter --iEcm 13 --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
 
     # QCD
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
+    runFixedPlotter --iEcm 13 --forceMerge --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
 
-    DIR=~/www/13TeV_tauFakes_25ns_split/
+    DIR="${BASEWEBDIR}_split/"
     PLOTTERWJETS=${DIR}plotter_wjet.root
     PLOTTERQCD=${DIR}plotter_qcd.root
     mkdir -p ${DIR}
@@ -144,7 +148,7 @@ elif [ "${1}" = "plot" ]; then
 elif [ "${1}" = "harvest" ]; then
     # Fix. --plotExt does not really impact (extensions are multiple and hardcoded)
     # Configurable input directory
-    runFakeRate --inDir ~/www/13TeV_tauFakes_25ns/ --outDir fakerate --plotExt .png
+    runFakeRate --inDir ${BASEWEBDIR}/ --outDir fakerate --plotExt .png
 
 fi
 
