@@ -402,21 +402,22 @@ int main (int argc, char *argv[])
   FakeRateAnalysisCollection analyses;
 
   // Quark-jets selection
-//  analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
-//  
-//  // Gluon-jets selection
-//  analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
-//
+  analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
+  
+  // Gluon-jets selection
+  analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
+
   analyses.push_back( new FakeRateAnalysis("qcd_qonly", doData) ); // Compute fakes for wjets MC only
-  //  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
-//  analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
-//  analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
-//
-//  analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
-//  analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
-//  analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
-//  
-//
+  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
+
+  analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
+  analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
+
+  analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
+  
+
 
   FakesVariableCollection vars;
   vars.push_back( new FakesVariable("pt"     , 1) );
