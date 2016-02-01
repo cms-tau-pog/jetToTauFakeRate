@@ -1,6 +1,6 @@
 #include "TauAnalysis/JetToTauFakeRate/interface/HiggsUtils.h"
 #include "TGraphErrors.h"
-//#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h" //FIXME
+//#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
 
 namespace higgs{
 
@@ -90,10 +90,10 @@ namespace higgs{
 
     
     //
-    double transverseMass(LorentzVector &visible, LorentzVector &invisible, bool assumeSameMass){
+    double transverseMass(const LorentzVector &visible, const LorentzVector &invisible, bool assumeSameMass){
       if(assumeSameMass){
 	LorentzVector sum=visible+invisible;
-	double tMass = pow(sqrt(pow(visible.pt(),2)+pow(visible.mass(),2))+sqrt(pow(invisible.pt(),2)+pow(visible.mass(),2)),2);
+	double tMass = pow(sqrt(pow(visible.pt(),2)+pow(visible.mass(),2))+sqrt(pow(invisible.pt(),2)+pow(91.188,2)),2);
 	tMass-=pow(sum.pt(),2);
 	return sqrt(tMass);
       }else{
@@ -193,9 +193,7 @@ namespace higgs{
                    hL->SetBinContent(i, valL);
                    hR->SetBinContent(i, valR);
                 }
-//                TH1F* hC = th1fmorph("hC","hC", hL, hR, CsecondL, CsecondR, Csecond, 1.0, 0);
-                 TH1F* hC = hL; 
-                #pragma message ("Loic Warning: th1fmorph not defined in 7XY, code need to be fixed!")
+                TH1F* hC = NULL; 
 
                 TGraph* nrGrC = new TGraph(hC->GetXaxis()->GetNbins());
                 for(int i=0;i<hC->GetXaxis()->GetNbins();i++){

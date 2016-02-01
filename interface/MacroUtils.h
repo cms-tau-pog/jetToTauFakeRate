@@ -10,6 +10,7 @@
 
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 
 
@@ -37,7 +38,18 @@
 
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
+#include "TauAnalysis/JetToTauFakeRate/interface/PatUtils.h"
+
+#include <istream>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
 #include <vector>
 #include "TVector3.h"
 #include "TMath.h"
@@ -127,8 +139,22 @@ namespace utils
 
     //cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
     FactorizedJetCorrector *getJetCorrector(TString baseDir, bool isMC);
-  }
+  
 
+
+    // JES/JER Smearing
+//    std::vector<double> smearJER(double pt, double eta, double genPt);
+//    std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc);
+//    
+//    //set new jet energy corrections
+//    void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, double rho, int nvtx,bool isMC);
+//    
+//    //apply MET variations
+//    enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };
+//    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons, bool isMC);
+    
+  }
+  
 
   //round up and show in TeX
   std::string toLatexRounded(double value, double error, double systError=-1,bool doPowers=true);
@@ -147,11 +173,12 @@ namespace utils
 
   // loop on all the lumi blocks for an EDM file in order to count the number of events that are in a sample
   // this is useful to determine how to normalize the events (compute weight)
+  double getTotalNumberOfEvents(std::vector<std::string>& urls, bool fast=false, bool weightSum=false);
+
   unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter);
   void getMCPileupDistributionFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
   bool isGoodVertex(reco::Vertex& vtx);
   void getMCPileupDistributionFromMiniAODtemp(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
-  // To be removed soon
   void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup);
   void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup);
   void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters);
@@ -160,6 +187,8 @@ namespace utils
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::string pattern);
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::string pattern1, std::string pattern2, std::string pattern3="", std::string pattern4="");
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::vector<std::string>& patterns);
+
+  void getHiggsLineshapeFromMiniAOD(std::vector<std::string>& urls, TH1D* hGen);
 
   inline bool sort_CandidatesByPt(const pat::GenericParticle &a, const pat::GenericParticle &b)  { return a.pt()>b.pt(); }
 }
@@ -196,5 +225,6 @@ class DuplicatesChecker{
     return true;
   }
 };
+
 
 #endif
