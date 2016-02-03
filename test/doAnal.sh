@@ -106,13 +106,17 @@ elif [ "${1}" = "plot" ]; then
     ONLYQCD="--onlyStartWith qcd"
     PLOTEXT=" --plotExt .png --plotExt .pdf --plotExt .C "
     
+    MERGE="--forceMerge"
+    MERGE="--useMerged"
+    MERGE=""
+    
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
-    runFixedPlotter --iEcm 13 --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
     #runFixedPlotter --iEcm 13 --debug --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} 
 
     # QCD
-    runFixedPlotter --iEcm 13 --forceMerge --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
 
     DIR="${BASEWEBDIR}_split/"
     PLOTTERWJETS=${DIR}plotter_wjet.root
@@ -128,10 +132,10 @@ elif [ "${1}" = "plot" ]; then
 
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
 
     # QCD
-    runFixedPlotter --iEcm 13 --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
 
 
  
