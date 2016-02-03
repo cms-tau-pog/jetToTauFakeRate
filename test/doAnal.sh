@@ -5,6 +5,7 @@
 # 1: run the analysis (must merge submit script here)
 
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+###JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjet_stitch.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples_wjet.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd.json
 ### JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data.json
@@ -13,7 +14,7 @@ JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json#
 
 QUEUE=1nh
-OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes/
+OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes_2/
 #QUEUE=8nm
 #OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes8nm/
 
@@ -90,10 +91,10 @@ elif [ "${1}" = "plot" ]; then
     # Different tests
     LUMIWJETS=2136
     LUMIQCD=2136
-    LUMIWJETS=307
-    LUMIQCD=277
-    LUMIWJETS=336
-    LUMIQCD=729
+    #LUMIWJETS=307
+    #LUMIQCD=277
+    #LUMIWJETS=336
+    #LUMIQCD=729
 
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
     JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
@@ -108,6 +109,7 @@ elif [ "${1}" = "plot" ]; then
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
     runFixedPlotter --iEcm 13 --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
+    #runFixedPlotter --iEcm 13 --debug --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} 
 
     # QCD
     runFixedPlotter --iEcm 13 --forceMerge --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
