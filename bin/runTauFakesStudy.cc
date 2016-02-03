@@ -953,12 +953,21 @@ int main (int argc, char *argv[])
         // One lepton
         bool passLeptonSelection(selLeptons.size()==1);// && nVetoLeptons==0); 
         if(passLeptonSelection) passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
+        if(passLeptonSelection) // Updated lepton selection
+          {
+            int id(abs(selLeptons[0].pdgId()));                                                                                                                               
+            weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[0].pt(), selLeptons[0].eta(), id,  id ==11 ? "tight"    : "tight"    ).first : 1.0; //ID               
+          }
+        
         // Transverse mass
         double mt(0.);
         if(selLeptons.size()>0)
           {
             LorentzVector leptonformt = selLeptons[0].p4();
             mt =utils::cmssw::getMT<const LorentzVector,LorentzVector>(leptonformt,recoMET);
+
+            // Apply lepton efficiency
+
           }
         bool passMtSelection(mt>50 );
         // At least one jet not overlapping with the muon
