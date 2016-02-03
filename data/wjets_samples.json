@@ -6,9 +6,13 @@
       "color":809,
       "lcolor":1,
       "destination":"wjets selection",
-      "twikixsec":"20508.9",
+      "twikixsec":"NNLO is 61526.7",
       "data":[
-        { "dtag":"MC13TeV_WJets_LO"                            , "split":100, "xsec":61526.7        , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+	{ "dtag":"MC13TeV_WJets_LO_inc"                             , "split":400, "xsec":50690.0       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+	{ "dtag":"MC13TeV_WJets_LO_100To200"                             , "split":400, "xsec":1345.0       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+	{ "dtag":"MC13TeV_WJets_LO_200To400"                             , "split":400, "xsec":359.7       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+	{ "dtag":"MC13TeV_WJets_LO_400To600"                             , "split":400, "xsec":48.91       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_HT400-To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+	{ "dtag":"MC13TeV_WJets_LO_600ToInf"                             , "split":400, "xsec":18.77       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     { 

@@ -79,7 +79,7 @@ namespace patUtils
 
    bool exclusiveDataEventFilter(const double&run, const bool& isMC, const bool& isPromptReco);
 
-
+   double getHTScaleFactor(TString dtag, double lheHt);
 
    class MetFilter{
     private :

@@ -623,7 +623,71 @@ namespace patUtils
     return passExclusiveDataEventFilter;
   }
 
+  
+  double getHTScaleFactor(TString dtag, double lheHt)
+  {
+    // NNLO per-event weights as a function of generator level HT
+    // (from https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples )
+    // For DY-5to50, only LO is available.
 
+    double htScaleFactor(1.0);
+
+    if(dtag.Contains("WJetsToLNu"))
+      {
+        // NNLO
+        // Valid for:
+        // /WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /WJetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /WJetsToLNu_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /WJetsToLNu_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        
+        if     (lheHt<100              ) htScaleFactor=0.8520862372;
+        else if(lheHt>=100 && lheHt<200) htScaleFactor=0.1352710705;
+        else if(lheHt>=200 && lheHt<400) htScaleFactor=0.076142149 ;
+        else if(lheHt>=400 && lheHt<600) htScaleFactor=0.0326980819;
+        else if(lheHt>=600             ) htScaleFactor=0.0213743732;
+        // Maybe add default option with exception thrown?
+      }
+    else if(dtag.Contains("DYJetsToLL_M-50"))
+      {
+        // NNLO
+        // Valid for:
+        // /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        
+        if     (lheHt<100              ) htScaleFactor=0.6655715203;
+        else if(lheHt>=100 && lheHt<200) htScaleFactor=0.0575124298;
+        else if(lheHt>=200 && lheHt<400) htScaleFactor=0.049972089 ;
+        else if(lheHt>=400 && lheHt<600) htScaleFactor=0.0062770613;
+        else if(lheHt>=600             ) htScaleFactor=0.00271213  ;
+        // Maybe add default option with exception thrown?
+      }
+    else if(dtag.Contains("DYJetsToLL_M-5to50"))
+      {
+        // LO
+        // Valid for:
+        // /DYJetsToLL_M-5to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-5to50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-5to50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-5to50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        // /DYJetsToLL_M-5to50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8
+        
+        if     (lheHt<100              ) htScaleFactor=7.5826225134;
+        else if(lheHt>=100 && lheHt<200) htScaleFactor=0.2149472503;
+        else if(lheHt>=200 && lheHt<400) htScaleFactor=0.0365903335;
+        else if(lheHt>=400 && lheHt<600) htScaleFactor=0.0035837837;
+        else if(lheHt>=600             ) htScaleFactor=0.0011156801;
+        // Maybe add default option with exception thrown?
+      }
+    return htScaleFactor;
+  }
+
+
+  
 void MetFilter::FillBadEvents(std::string path){
      unsigned int Run=0; unsigned int Lumi=1; unsigned int Event=2;
      //LOOP on the files and fill the map

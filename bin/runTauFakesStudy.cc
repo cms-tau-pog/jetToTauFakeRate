@@ -666,15 +666,41 @@ int main (int argc, char *argv[])
       tausHandle.getByLabel (ev, "slimmedTaus");
       if (tausHandle.isValid() ) taus = *tausHandle;
 
-      if (isV0JetsMC)
-        {
-          fwlite::Handle < LHEEventProduct > lheEPHandle;
-          lheEPHandle.getByLabel (ev, "externalLHEProducer");
-          mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
-          if (lheEPHandle->hepeup ().NUP > 5)  continue;
-          mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
-        }
+      // Old stitching for exclusive jets samplesif (isV0JetsMC)
+      // Old stitching for exclusive jets samples  {
+      // Old stitching for exclusive jets samples    fwlite::Handle < LHEEventProduct > lheEPHandle;
+      // Old stitching for exclusive jets samples    lheEPHandle.getByLabel (ev, "externalLHEProducer");
+      // Old stitching for exclusive jets samples    mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
+      // Old stitching for exclusive jets samples    if (lheEPHandle->hepeup ().NUP > 5)  continue;
+      // Old stitching for exclusive jets samples    mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
+      // Old stitching for exclusive jets samples  }
       
+
+
+     
+      // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
+      if(isV0JetsMC)
+        {
+          // access generator level HT
+          fwlite::Handle<LHEEventProduct> lheEventProduct;
+          lheEventProduct.getByLabel(ev, "externalLHEProducer");
+          //edm::Handle<LHEEventProduct> lheEventProduct;  
+          //ev.getByLabel( 'externalLHEProducer', lheEventProduct);
+          const lhef::HEPEUP& lheEvent = lheEventProduct->hepeup();
+          std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
+          double lheHt = 0.;
+          size_t numParticles = lheParticles.size();
+          for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle ) {
+            int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
+            int status = lheEvent.ISTUP[idxParticle];
+            if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) ) { // quarks and gluons
+          lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.)); // first entry is px, second py
+            } 
+          }
+          if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl; 
+          weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
+        }
+            
       //
       // DERIVE WEIGHTS TO APPLY TO SAMPLE
       //
@@ -869,7 +895,7 @@ int main (int argc, char *argv[])
           bool passPFloose = passPFJetID("Loose", jets[ijet]);      //FIXME --> Need to be updated according to te latest recipe;
           float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
           bool passLooseSimplePuId = true;      //FIXME --> Need to be updated according to the latest recipe
-          if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.5) continue;
+          if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.3) continue;
 
           bool hasCSVtag( jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose );
 
@@ -909,7 +935,7 @@ int main (int argc, char *argv[])
         // At least one event vertex
         bool passVtxSelection(nGoodPV); // Ask someone about the offlineSkimmedPrimaryVertices collection
         // One lepton
-        bool passLeptonSelection(selLeptons.size()==1 && nVetoLeptons==0); 
+        bool passLeptonSelection(selLeptons.size()==1);// && nVetoLeptons==0); 
         if(passLeptonSelection) passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
         // Transverse mass
         double mt(0.);
@@ -932,7 +958,7 @@ int main (int argc, char *argv[])
         if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("wjet_eventflow", wjetTags, 2, weight);}
         if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("wjet_eventflow", wjetTags, 3, weight);}
         if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("wjet_eventflow", wjetTags, 4, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection && passBtagSelection && passHardJetsSelection) { ctrlCats.push_back("step6"); mon.fillHisto("wjet_eventflow", wjetTags, 5, weight);} 
+        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection && passBtagSelection) { ctrlCats.push_back("step6"); mon.fillHisto("wjet_eventflow", wjetTags, 5, weight);} 
         
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
@@ -1031,7 +1057,7 @@ int main (int argc, char *argv[])
           obj.unpackPathNames(trigNames);
           // I already know that (if(jetTrigger)) if(utils::passTriggerPatterns(tr, "HLT_PFJet260_v*"))
           // I guess it's "both L3 and LF", that is "true true". L3 only is "false true", LF only is "true false", none is "false false"
-          if(obj.hasPathName("HLT_PFJet260_v*", true, true)){
+          if(obj.hasPathName("HLT_PFJet450_v*", true, true)){
             for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet){
               if( deltaR(obj.eta(), obj.phi(), jet->eta(), jet->phi()) < 0.3 ){
                 if(jetsFiring==0)
@@ -1104,7 +1130,6 @@ int main (int argc, char *argv[])
                 mon.fillHisto(icat+tcat+"eta_numerator",     qcdTags, jet->eta()   , weight);
                 mon.fillHisto(icat+tcat+"radius_numerator",  qcdTags, jetWidth     , weight);
                 mon.fillHisto(icat+tcat+"nvtx_numerator",    qcdTags, nGoodPV     , weight);
-                
               }
             }
           // Some control plots, mostly on event selection
