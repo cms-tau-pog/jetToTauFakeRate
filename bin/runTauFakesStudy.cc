@@ -43,7 +43,8 @@
 #include "TauAnalysis/JetToTauFakeRate/interface/TMVAUtils.h"
 #include "TauAnalysis/JetToTauFakeRate/interface/LeptonEfficiencySF.h"
 #include "TauAnalysis/JetToTauFakeRate/interface/PDFInfo.h"
-#include "TauAnalysis/JetToTauFakeRate/interface/MuScleFitCorrector.h"
+//#include "TauAnalysis/JetToTauFakeRate/interface/MuScleFitCorrector.h"
+#include "TauAnalysis/JetToTauFakeRate/interface/rochcor2015.h"
 #include "TauAnalysis/JetToTauFakeRate/interface/BtagUncertaintyComputer.h"
 #include "TauAnalysis/JetToTauFakeRate/interface/GammaWeightsHandler.h"
 
@@ -377,11 +378,11 @@ int main (int argc, char *argv[])
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/Summer15_25nsV7_DATA_UncertaintySources_AK4PFchs.txt").Data());
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/DATA_UncertaintySources_AK4PFchs.txt").Data());
 
   //muon energy scale and uncertainties
   //MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
-
+  rochcor2015* muCor = new rochcor2015(); // Replaces the RunI MuScle fit
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
@@ -762,7 +763,7 @@ int main (int argc, char *argv[])
             passVetoKin(true),          passVetoId(true),          passVetoIso(true);
           int lid = leptons[ilep].pdgId();
           
-          //apply muon corrections
+          //apply muon corrections (MuScle fit - RunI)
           // if (abs (lid) == 13)
           //   {
           //     if (muCor)
@@ -775,7 +776,22 @@ int main (int argc, char *argv[])
           //         muDiff += leptons[ilep].p4();
           //       }
           //   }
-          
+
+          // apply muon corrections (Rochester - RunII)
+          if(abs(lid)==13){                                                                                                                                                           
+            if(muCor){                                                                                                                                                              
+              float qter;                                                                                                                                                           
+              TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());                                                                   
+              if(isMC){muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);                                                                                                              
+              }else{   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter);                                                                                                              
+              }                                                                                                                                                                     
+              muDiff -= leptons[ilep].p4();                                                                                                                                         
+              leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );                                                                                                 
+              muDiff += leptons[ilep].p4();                                                                                                                                         
+            }                                                                                                                                                                       
+          }        
+
+
           //no need for charge info any longer
           lid = abs (lid);
           TString lepStr(lid == 13 ? "mu" : "e");
