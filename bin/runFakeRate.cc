@@ -14,6 +14,7 @@
 
 #include "TSystem.h"
 #include "TROOT.h"
+#include "TError.h"
 #include "TFile.h"
 #include "TColor.h"
 //#include "TDirectory.h"
@@ -173,7 +174,7 @@ public:
       if(name_ == "wjet")
         {
           sample_.push_back("W,multijets");
-          sample_.push_back("QCDMuEnriched");
+          //sample_.push_back("QCDMuEnriched");
           sample_.push_back("t#bar{t}");
           if(doData_) data_ = "SingleMu data";
           step_=TString("step5");
@@ -182,7 +183,7 @@ public:
       else if(name_ == "wjet_wonly")
         {
           sample_.push_back("W,multijets");
-          sample_.push_back("QCDMuEnriched");
+          //sample_.push_back("QCDMuEnriched");
           if(doData_) data_ = "SingleMu data";
           step_=TString("step5");
           rawname_="wjet";
@@ -206,7 +207,7 @@ public:
       else if(name_ == "wjetnob_wonly")
         {
           sample_.push_back("W,multijets");
-          sample_.push_back("QCDMuEnriched");
+          //sample_.push_back("QCDMuEnriched");
           if(doData_) data_ = "SingleMu data";
           step_=TString("step6");
           rawname_="wjet";
@@ -301,6 +302,8 @@ int main (int argc, char *argv[])
   //gStyle->SetPalette(1);
   //gStyle->SetNdivisions(505);
 
+  gErrorIgnoreLevel = 3000;
+
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
   TH1::SetDefaultSumw2();
@@ -384,6 +387,7 @@ int main (int argc, char *argv[])
     if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
     if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
     if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
+    if(arg.find("--debug")!=string::npos){ debug = true;    }
     if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt.push_back(argv[i+1]);  i++;  printf("saving plots as = %s\n", plotExt[plotExt.size()-1].c_str());  }
     if(arg.find("--cutflow" )!=string::npos && i+1<argc){ cutflowhisto   = argv[i+1];  i++;  printf("Normalizing from 1st bin in = %s\n", cutflowhisto.c_str());  }
     if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
@@ -439,12 +443,12 @@ int main (int argc, char *argv[])
         {
           TauDiscriminatorSet* discr = *idiscr;
 
-          cout << "\t Processing discriminator: " << discr->name() << endl;
+          if(debug) cout << "\t Processing discriminator: " << discr->name() << endl;
 
           for(FakesVariableCollection::iterator ivar=vars.begin(); ivar!=vars.end(); ++ivar)
             {
               FakesVariable* var = *ivar;
-              cout << "\t \t Processing variable: " << var->name() << endl;
+              if(debug) cout << "\t \t Processing variable: " << var->name() << endl;
               
               vector<TH1*> numerator;
               TH1* denominator = NULL;
@@ -455,7 +459,7 @@ int main (int argc, char *argv[])
               for(size_t isample = 0; isample<anal->nsamples(); ++isample)
                 {
                   TString sample(anal->sample(isample));
-                  cout << "\t \t \t Processing sample: " << sample  << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator") << endl;
+                  if(debug) cout << "\t \t \t Processing sample: " << sample  << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator") << endl;
                   // Denominator is common (independent on tauID)
                   if(!denominator)
                     denominator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+var->name()+TString("_denominator"));
@@ -470,7 +474,7 @@ int main (int argc, char *argv[])
               for(size_t l=0; l<discr->nwp(); ++l) // Loop on working points
                 {
                   TString tcat(discr->wp(l));
-                  cout << "\t \t \t Processing working point: " << tcat << endl;
+                  if(debug) cout << "\t \t \t Processing working point: " << tcat << endl;
                   Int_t colour(discr->colour(l));
                   Int_t marker(discr->marker(l));
                   Int_t dataMarker(discr->dataMarker(l));
@@ -481,7 +485,7 @@ int main (int argc, char *argv[])
                   for(size_t isample = 0; isample<anal->nsamples(); ++isample)
                     {
                       TString sample(anal->sample(isample));
-                      cout << "\t \t \t \t Processing sample: " << sample << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator") << endl;
+                      if(debug) cout << "\t \t \t \t Processing sample: " << sample << ", name: " << sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator") << endl;
                       if(!temp_numerator)
                         temp_numerator = (TH1*)     f->Get(sample+TString("/")+anal->rawname()+TString("_")+anal->step()+tcat+var->name()+TString("_numerator"));    
                       else
