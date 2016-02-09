@@ -683,6 +683,9 @@ namespace patUtils
         else if(lheHt>=600             ) htScaleFactor=0.0011156801;
         // Maybe add default option with exception thrown?
       }
+    
+    htScaleFactor/=1000; // The scale factors are derived for 1/fb, whereas I normalize in picobarns
+
     return htScaleFactor;
   }
 
