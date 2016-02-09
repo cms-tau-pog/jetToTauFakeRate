@@ -209,38 +209,38 @@ namespace utils
 	       (absid>=210551 && absid<=210557) );
     }
 
-    //cf. https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
-    std::vector<float> smearJER(float pt, float eta, float genPt)
-    {
-      std::vector<float> toReturn(3,pt);
-      if(genPt<=0) return toReturn;
-      
-      //
-      eta=fabs(eta);
-      double ptSF(1.0), ptSF_err(0.06);
-      if(eta<0.5)                  { ptSF=1.052; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.062+0.061),2)); }
-      else if(eta>=0.5 && eta<1.1) { ptSF=1.057; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.056+0.055),2)); }
-      else if(eta>=1.1 && eta<1.7) { ptSF=1.096; ptSF_err=sqrt(pow(0.017,2)+pow(0.5*(0.063+0.062),2)); }
-      else if(eta>=1.7 && eta<2.3) { ptSF=1.134; ptSF_err=sqrt(pow(0.035,2)+pow(0.5*(0.087+0.085),2)); }
-      else if(eta>=2.3 && eta<5.0) { ptSF=1.288; ptSF_err=sqrt(pow(0.127,2)+pow(0.5*(0.155+0.153),2)); }
-      
-      toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
-      toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
-      toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
-      return toReturn;
-    }
-
+    ////cf. https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
+    //std::vector<float> smearJER(float pt, float eta, float genPt)
+    //{
+    //  std::vector<float> toReturn(3,pt);
+    //  if(genPt<=0) return toReturn;
+    //  
+    //  //
+    //  eta=fabs(eta);
+    //  double ptSF(1.0), ptSF_err(0.06);
+    //  if(eta<0.5)                  { ptSF=1.052; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.062+0.061),2)); }
+    //  else if(eta>=0.5 && eta<1.1) { ptSF=1.057; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.056+0.055),2)); }
+    //  else if(eta>=1.1 && eta<1.7) { ptSF=1.096; ptSF_err=sqrt(pow(0.017,2)+pow(0.5*(0.063+0.062),2)); }
+    //  else if(eta>=1.7 && eta<2.3) { ptSF=1.134; ptSF_err=sqrt(pow(0.035,2)+pow(0.5*(0.087+0.085),2)); }
+    //  else if(eta>=2.3 && eta<5.0) { ptSF=1.288; ptSF_err=sqrt(pow(0.127,2)+pow(0.5*(0.155+0.153),2)); }
+    //  
+    //  toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
+    //  toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
+    //  toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
+    //  return toReturn;
+    //}
     //
-    std::vector<float> smearJES(float pt, float eta, JetCorrectionUncertainty *jecUnc)
-    {
-      jecUnc->setJetEta(eta);
-      jecUnc->setJetPt(pt);
-      float relShift=fabs(jecUnc->getUncertainty(true));
-      std::vector<float> toRet;
-      toRet.push_back((1.0+relShift)*pt);
-      toRet.push_back((1.0-relShift)*pt);
-      return toRet;
-    }
+    ////
+    //std::vector<float> smearJES(float pt, float eta, JetCorrectionUncertainty *jecUnc)
+    //{
+    //  jecUnc->setJetEta(eta);
+    //  jecUnc->setJetPt(pt);
+    //  float relShift=fabs(jecUnc->getUncertainty(true));
+    //  std::vector<float> toRet;
+    //  toRet.push_back((1.0+relShift)*pt);
+    //  toRet.push_back((1.0-relShift)*pt);
+    //  return toRet;
+    //}
 
 
     //
