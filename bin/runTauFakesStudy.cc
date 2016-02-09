@@ -66,32 +66,6 @@
 
 using namespace std;
 
-bool passPFJetID(std::string label,
-                 pat::Jet jet){
-  
-  bool passID(false); 
-  
-  float rawJetEn(jet.correctedJet("Uncorrected").energy() );
-
-  double eta=jet.eta();
- 
-  float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
-  float nef( jet.neutralEmEnergy()/rawJetEn );
-  float cef( jet.chargedEmEnergy()/rawJetEn );
-  float chf( jet.chargedHadronEnergy()/rawJetEn );
-  float nch    = jet.chargedMultiplicity();
-  float nconst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
-  float muf(jet.muonEnergy()/rawJetEn); 
-
-  // Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
-  if(label=="Loose")
-    passID = ( (nhf<0.99 && nef<0.99 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4) );
-  if(label=="Tight")
-    passID = ( (nhf<0.90 && nef<0.90 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4) );
-  
-  return passID; 
-  
-}
 
 
 bool hasStableLeptonAsDaughter(const reco::GenParticle p)
@@ -152,6 +126,90 @@ bool hasTauAsMother(const reco::GenParticle  p)
   return foundTau;
 }
 
+namespace utils{
+  namespace cmssw{
+
+    std::vector<double> smearJER(double pt, double eta, double genPt){
+      std::vector<double> toReturn(3,pt);
+      if(genPt<=0) return toReturn;
+      
+      // FIXME: These are the 8 TeV values.
+      //
+      eta=fabs(eta);
+      double ptSF(1.0), ptSF_err(0.06);
+      if(eta<0.8)                  { ptSF=1.061; ptSF_err=sqrt(pow(0.012,2)+pow(0.023,2)); }
+      else if(eta>=0.8 && eta<1.3) { ptSF=1.088; ptSF_err=sqrt(pow(0.012,2)+pow(0.029,2)); }
+      else if(eta>=1.3 && eta<1.9) { ptSF=1.106; ptSF_err=sqrt(pow(0.017,2)+pow(0.030,2)); }
+      else if(eta>=1.9 && eta<2.5) { ptSF=1.126; ptSF_err=sqrt(pow(0.035,2)+pow(0.094,2)); }
+      else if(eta>=2.5 && eta<3.0) { ptSF=1.343; ptSF_err=sqrt(pow(0.127,2)+pow(0.123,2)); }
+      else if(eta>=3.0 && eta<3.2) { ptSF=1.303; ptSF_err=sqrt(pow(0.127,2)+pow(1.303,2)); }
+      else if(eta>=3.2 && eta<5.0) { ptSF=1.320; ptSF_err=sqrt(pow(0.127,2)+pow(1.320,2)); }
+      
+      toReturn[0]=TMath::Max(0.,((genPt+ptSF*(pt-genPt)))/pt);
+      toReturn[1]=TMath::Max(0.,((genPt+(ptSF+ptSF_err)*(pt-genPt)))/pt);
+      toReturn[2]=TMath::Max(0.,((genPt+(ptSF-ptSF_err)*(pt-genPt)))/pt);
+      return toReturn;
+    }
+    
+
+    std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
+    {
+      jecUnc->setJetEta(eta);
+      jecUnc->setJetPt(pt);
+      double relShift=fabs(jecUnc->getUncertainty(true));
+      std::vector<double> toRet;
+      toRet.push_back((1.0+relShift));
+      toRet.push_back((1.0-relShift));
+      return toRet;
+    }
+    
+    
+    void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC){
+      for(size_t ijet=0; ijet<jets.size(); ijet++){
+        pat::Jet& jet = jets[ijet];
+        
+        //correct JES
+        LorentzVector rawJet = jet.correctedP4("Uncorrected");
+        
+        //double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
+        //LorentzVector rawJet(jet*toRawSF);
+        jesCor->setJetEta(rawJet.eta());
+        jesCor->setJetPt(rawJet.pt());
+        jesCor->setJetA(jet.jetArea());
+        jesCor->setRho(rho);
+        jesCor->setNPV(nvtx);
+        jet.setP4(rawJet*jesCor->getCorrection());
+        
+        //smear JER
+        double newJERSF(1.0);
+        if(isMC){
+          const reco::GenJet* genJet=jet.genJet();
+          double genjetpt( genJet ? genJet->pt(): 0.);
+          std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
+          jet.setP4(rawJet*smearJER[0]);
+          
+          // //set the JER up/down alternatives
+          jet.addUserFloat("jerup", smearJER[1]);
+          jet.addUserFloat("jerdown", smearJER[2] );
+        }
+        
+        if(isMC){
+          ////set the JES up/down pT alternatives
+          std::vector<double> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+          jet.addUserFloat("jesup",    ptUnc[0] );
+          jet.addUserFloat("jesdown",  ptUnc[1] );
+        }
+        
+        // FIXME: this is not to be re-set. Check that this is a desired non-feature.
+        // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
+        //to get the raw jet again
+        //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
+      }
+    }
+     
+  } // End namespace cmssw
+} // End namespace utils
+
 int main (int argc, char *argv[])
 {
   //##############################################
@@ -200,19 +258,17 @@ int main (int argc, char *argv[])
     filterOnlySINGLEMU (false);
   if (!isMC)
     {
-      if (dtag.Contains ("JetHT"))     filterOnlyJETHT    = true;
+      if (dtag.Contains ("JetHT"))       filterOnlyJETHT    = true;
       if (dtag.Contains ("SingleMuon"))  filterOnlySINGLEMU = true;
     }
   
   bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
   bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL_50toInf") || dtag.Contains ("WJets")));
-  bool isWGmc       (isMC && dtag.Contains ("WG"));
-  bool isZGmc       (isMC && dtag.Contains ("ZG"));
-  bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
-  bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
   bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco"));
-  bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
-  
+  bool isNLOMC      (isMC && (TString(urls[0]).Contains("amcatnlo") || TString(urls[0]).Contains("powheg")) );
+
+  if(debug) cout << "isNLOMC: " << isNLOMC << ", for dtag: " << dtag << endl;
+
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
   if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
@@ -232,14 +288,14 @@ int main (int argc, char *argv[])
       varNames.push_back ("_lesup" ); varNames.push_back ("_lesdown" );
       varNames.push_back ("_puup"  ); varNames.push_back ("_pudown"  );
       varNames.push_back ("_btagup"); varNames.push_back ("_btagdown");
-      if (isMC_ZZ)
-        {
-          varNames.push_back ("_zzptup"); varNames.push_back ("_zzptdown");
-        }
-      if (isMC_WZ)
-        {
-          varNames.push_back ("_wzptup"); varNames.push_back ("_wzptdown");
-        }
+      //if (isMC_ZZ)
+      //  {
+      //    varNames.push_back ("_zzptup"); varNames.push_back ("_zzptdown");
+      //  }
+      //if (isMC_WZ)
+      //  {
+      //    varNames.push_back ("_wzptup"); varNames.push_back ("_wzptdown");
+      //  }
     }
   
   size_t nvarsToInclude = varNames.size ();
@@ -264,20 +320,20 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
 
   //event selection
-  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("wjet_eventflow", ";;Events", 6, 0, 6));
+  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("wjet_eventflow", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "-");
   h->GetXaxis()->SetBinLabel (2, "#geq 1 vertex");
   h->GetXaxis()->SetBinLabel (3, "1 lepton (+veto)");
   h->GetXaxis()->SetBinLabel (4, "M_{T}>50~GeV");
   h->GetXaxis()->SetBinLabel (5, "#geq 1 jet");
   h->GetXaxis()->SetBinLabel (6, "#geq 1 b-tags");
-  h = (TH1D*) mon.addHistogram (new TH1D ("qcd_eventflow", ";;Events", 6, 0, 6));
-  h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
-  h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
-  h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
-  h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
-  h->GetXaxis()->SetBinLabel (5, "1 #tau");
-  h->GetXaxis()->SetBinLabel (6, "op. sign");
+  h = (TH1D*) mon.addHistogram (new TH1D ("qcd_eventflow", ";;Events", 6, 0., 6.));
+  h->GetXaxis()->SetBinLabel (1, "-");
+  h->GetXaxis()->SetBinLabel (2, "#geq 1 vertex");
+  h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
+  h->GetXaxis()->SetBinLabel (4, "Lepton veto");
+  h->GetXaxis()->SetBinLabel (5, "(Unused)");
+  h->GetXaxis()->SetBinLabel (6, "(Unused)");
 
 
   // Setting up control categories
@@ -378,8 +434,10 @@ int main (int argc, char *argv[])
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/DATA_UncertaintySources_AK4PFchs.txt").Data());
-
+  if(debug) cout << "Jet Corrector created for directory " << jecDir << endl;
+  TString pf(isMC ? "MC" : "DATA");
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
+  if(debug) cout << "Jet CorrectionUncertainty created for directory " << jecDir << endl;
   //muon energy scale and uncertainties
   //MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
   rochcor2015* muCor = new rochcor2015(); // Replaces the RunI MuScle fit
@@ -484,10 +542,17 @@ int main (int argc, char *argv[])
           if(evt.isValid())
             {
               weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+              if(debug) cout << "NNLO gen weight: " << evt->weight() << endl;
             }
-          
+          else
+            {
+              if(debug) cout << "Event is not valid" << endl;
+            }
+
         }
       
+      if(debug) cout << "Gen weight: " << weightGen << endl;
+
       std::vector < TString > tags (1, "all");
 
       //##############################################   EVENT LOOP STARTS   ##############################################
@@ -814,7 +879,7 @@ int main (int argc, char *argv[])
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoKin = false;
 
           //Cut based identification 
-          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
+          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Tight) : patUtils::passId (leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
           passVetoId = passId;
 
           //isolation
@@ -837,7 +902,7 @@ int main (int argc, char *argv[])
           
           bool overlapWithLepton(false);
           for(int l1=0; l1<(int)selLeptons.size();++l1){
-            if(deltaR(tau, selLeptons[l1])<0.1){overlapWithLepton=true; break;}
+            if(deltaR(tau, selLeptons[l1])<0.4){overlapWithLepton=true; break;}
           }
           if(overlapWithLepton) continue;
           
@@ -850,8 +915,8 @@ int main (int argc, char *argv[])
           
           //if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
           // Independent from lepton rejection algos performance
-          // if (!tau.tauID ("againstMuonTight3"))                           continue;
-          // if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
+          //if (!tau.tauID ("againstMuonTight3"))                           continue;
+          //if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
           
           // Pixel hits cut (will be available out of the box in new MINIAOD production)
           int nChHadPixelHits = 0;
@@ -890,13 +955,17 @@ int main (int argc, char *argv[])
       //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
       
       //select the jets
+
+      utils::cmssw::updateJEC(jets, jesCor, totalJESUnc, rho, nGoodPV, isMC);
+
       pat::JetCollection
         selWJetsJets, selQCDJets,
         selHardJets,
         selWJetsBJets, selQCDBJets;
       for (size_t ijet = 0; ijet < jets.size(); ijet++)
         {
-          if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 4.7) continue;
+          // if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 4.7) continue; // Reactivate this for jecs
+          if(jets[ijet].pt() < 20 || fabs(jets[ijet].eta()) > 2.3) continue;
           
           //mc truth for this jet
           const reco::GenJet * genJet = jets[ijet].genJet();
@@ -908,27 +977,28 @@ int main (int argc, char *argv[])
             minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
           
           //jet id
-          bool passPFloose = passPFJetID("Loose", jets[ijet]);      //FIXME --> Need to be updated according to te latest recipe;
+          bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);      //FIXME --> Need to be updated according to te latest recipe;
           float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
-          bool passLooseSimplePuId = true;      //FIXME --> Need to be updated according to the latest recipe
+          bool passLooseSimplePuId = true;//patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix.
           if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.3) continue;
 
-          bool hasCSVtag( jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose );
+          bool hasCSVtag( jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium );
 
           selQCDJets.push_back(jets[ijet]);
           if(hasCSVtag)
             selQCDBJets.push_back(jets[ijet]);
 
-          if (minDRlj < 0.7) continue;
+          if (minDRlj < 0.4) continue; // Was 0.7
+
           selWJetsJets.push_back(jets[ijet]);
           if(jets[ijet].pt()>40)
             selHardJets.push_back(jets[ijet]);
           if(hasCSVtag)
             selWJetsBJets.push_back(jets[ijet]);
         }
-      std::sort (selWJetsJets.begin(),  selWJetsJets.end(),  utils::sort_CandidatesByPt);
-      std::sort (selQCDJets.begin(),  selQCDJets.end(),  utils::sort_CandidatesByPt);
-      std::sort (selHardJets.begin(), selHardJets.end(), utils::sort_CandidatesByPt);
+      std::sort (selWJetsJets.begin(), selWJetsJets.end(), utils::sort_CandidatesByPt);
+      std::sort (selQCDJets.begin()  , selQCDJets.end()  , utils::sort_CandidatesByPt);
+      std::sort (selHardJets.begin() , selHardJets.end() , utils::sort_CandidatesByPt);
       
       // Event classification and analyses
       //if(muTrigger)  tags.push_back("wjets");
@@ -996,7 +1066,7 @@ int main (int argc, char *argv[])
           // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
           for(pat::JetCollection::iterator jet=selWJetsJets.begin(); jet!=selWJetsJets.end(); ++jet)
             {
-              if(abs(jet->eta())>2.3) continue;
+              if(jet->pt()<20.0 || abs(jet->eta())>2.3) continue;
               
               double jetWidth( ((jet->etaetaMoment()+jet->phiphiMoment())> 0) ? sqrt(jet->etaetaMoment()+jet->phiphiMoment()) : 0.);
               
@@ -1012,7 +1082,6 @@ int main (int argc, char *argv[])
                 TString tcat(tauDiscriminators[l]);
                 
                 // Match taus
-                //cross-clean with selected leptons and photons
                 double minDRtj(9999.);
                 pat::Tau theTau;
                 for (pat::TauCollection::iterator tau=selIdTaus[l].begin(); tau!=selIdTaus[l].end(); ++tau)
@@ -1097,26 +1166,31 @@ int main (int argc, char *argv[])
         }
         // At least one of the jets is required to be matched with the one firing HLT
         if(jetsFiring<1) passJetSelection=false;
+        
+        // Lepton veto, like a boss
+        bool passLeptonVeto(selLeptons.size()==0 && nVetoLeptons==0); 
+        
+        
 
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-                                                 { ctrlCats.push_back ("step1"); mon.fillHisto("qcd_eventflow", qcdTags, 0, weight);}
-        if(passVtxSelection   )                  { ctrlCats.push_back ("step2"); mon.fillHisto("qcd_eventflow", qcdTags, 1, weight);}
-        if(passVtxSelection && passJetSelection) { ctrlCats.push_back ("step3"); mon.fillHisto("qcd_eventflow", qcdTags, 2, weight);}
-        
+                                                                   { ctrlCats.push_back("step1"); mon.fillHisto("qcd_eventflow", qcdTags, 0, weight);}
+        if(passVtxSelection   )                                    { ctrlCats.push_back("step2"); mon.fillHisto("qcd_eventflow", qcdTags, 1, weight);}
+        if(passVtxSelection && passJetSelection)                   { ctrlCats.push_back("step3"); mon.fillHisto("qcd_eventflow", qcdTags, 2, weight);}
+        if(passVtxSelection && passJetSelection && passLeptonVeto) { ctrlCats.push_back("step4"); mon.fillHisto("qcd_eventflow", qcdTags, 3, weight);}
         
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-          if(icat!="step3") continue; // Only for final selection step, for a quick test
+          if(icat!="step3" && icat!="step4") continue; // Only for final selection step, for a quick test
           
           // Fake rate: 
           // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
           for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet)
             {
-              if(abs(jet->eta())>2.3) continue;
+              if(jet->pt() < 20 || abs(jet->eta())>2.3) continue;
 
               // Multi-jet event: the trigger jet is excluded from the fake rate computation if there is only one jet that passes the trigger requirement
               // In case more than one jet passes the requirement, all are used
@@ -1237,9 +1311,9 @@ int main (int argc, char *argv[])
               if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
 
               //jet id
-              bool passPFloose = true;  //FIXME
+              bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);      //FIXME --> Need to be updated according to te latest recipe;
               int simplePuId = true;    //FIXME
-              bool passLooseSimplePuId = true;  //FIXME
+              bool passLooseSimplePuId = true;//patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix.
               if (!passPFloose || !passLooseSimplePuId) continue;
 
               //jet is selected
