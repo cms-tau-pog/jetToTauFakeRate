@@ -14,7 +14,11 @@ JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json#
 
 QUEUE=1nh
-OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes_2/
+
+# 1 is with NNLO weights and oldDM (in principle. It is not called oldDM)
+# 2 is with NNLO weights and newDM
+# 3 is with NNLO weights and oldDM and better lepton cleaning
+OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes_3/
 #QUEUE=8nm
 #OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes8nm/
 
@@ -88,6 +92,9 @@ elif [ "${1}" = "plot" ]; then
     mv ~/www/temptemp/* ${DIR}
     cp ~/www/HIG-13-026/index.php ${DIR}
 
+
+    RUNINBACKGROUND="&"
+    RUNINBACKGROUND=""
     # Different tests
     LUMIWJETS=2136
     LUMIQCD=2136
@@ -107,16 +114,16 @@ elif [ "${1}" = "plot" ]; then
     PLOTEXT=" --plotExt .png --plotExt .pdf --plotExt .C "
     
     MERGE="--forceMerge"
-    MERGE="--useMerged"
-    MERGE=""
+    #MERGE="--useMerged"
+    #MERGE=""
     
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
-    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
-    #runFixedPlotter --iEcm 13 --debug --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} 
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} ${RUNINBACKGROUND} 
+    #runFixedPlotter --iEcm 13 --debug --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} ${RUNINBACKGROUND} 
 
     # QCD
-    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD} ${RUNINBACKGROUND} 
 
     DIR="${BASEWEBDIR}_split/"
     PLOTTERWJETS=${DIR}plotter_wjet.root
@@ -132,10 +139,10 @@ elif [ "${1}" = "plot" ]; then
 
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
-    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS}  &
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} ${RUNINBACKGROUND} 
 
     # QCD
-    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD}   &
+    runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD} ${RUNINBACKGROUND} 
 
 
  
