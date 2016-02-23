@@ -195,7 +195,7 @@ public:
           step_=TString("step5");
           rawname_="wjet";
         }
-      if(name_ == "wjetnob")
+      else if(name_ == "wjetnob")
         {
           sample_.push_back("W,multijets");
           sample_.push_back("QCDMuEnriched");
@@ -217,6 +217,54 @@ public:
           sample_.push_back("t#bar{t}");
           if(doData_) data_ = "SingleMu data";
           step_=TString("step6");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnoblepveto")
+        {
+          sample_.push_back("W,multijets");
+          sample_.push_back("QCDMuEnriched");
+          sample_.push_back("t#bar{t}");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step7");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnoblepveto_wonly")
+        {
+          sample_.push_back("W,multijets");
+          //sample_.push_back("QCDMuEnriched");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step7");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnoblepveto_tonly")
+        {
+          sample_.push_back("t#bar{t}");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step7");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnoblepjetveto")
+        {
+          sample_.push_back("W,multijets");
+          sample_.push_back("QCDMuEnriched");
+          sample_.push_back("t#bar{t}");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step8");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnoblepjetveto_wonly")
+        {
+          sample_.push_back("W,multijets");
+          //sample_.push_back("QCDMuEnriched");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step8");
+          rawname_="wjet";
+        }
+      else if(name_ == "wjetnoblepjetveto_tonly")
+        {
+          sample_.push_back("t#bar{t}");
+          if(doData_) data_ = "SingleMu data";
+          step_=TString("step8");
           rawname_="wjet";
         }
       else if(name_ == "qcd")
@@ -409,10 +457,10 @@ int main (int argc, char *argv[])
   analyses.push_back( new FakeRateAnalysis("wjet"      , doData) );
   
   // Gluon-jets selection
-  analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
+  //analyses.push_back( new FakeRateAnalysis("qcd"       , doData) );
 
-  analyses.push_back( new FakeRateAnalysis("qcd_qonly", doData) ); // Compute fakes for wjets MC only
-  analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
+  //analyses.push_back( new FakeRateAnalysis("qcd_qonly", doData) ); // Compute fakes for wjets MC only
+  //analyses.push_back( new FakeRateAnalysis("qcd_tonly", doData) ); // Compute fakes for ttbar MC only
 
   analyses.push_back( new FakeRateAnalysis("wjet_wonly", doData) ); // Compute fakes for wjets MC only
   analyses.push_back( new FakeRateAnalysis("wjet_tonly", doData) ); // Compute fakes for ttbar MC only
@@ -420,8 +468,16 @@ int main (int argc, char *argv[])
   analyses.push_back( new FakeRateAnalysis("wjetnob", doData) ); // Compute fakes for wjets MC only
   analyses.push_back( new FakeRateAnalysis("wjetnob_tonly", doData) ); // Compute fakes for ttbar MC only
   analyses.push_back( new FakeRateAnalysis("wjetnob_wonly", doData) ); // Compute fakes for wjets MC only
-  
 
+
+  analyses.push_back( new FakeRateAnalysis("wjetnoblepveto", doData) ); // Compute fakes for wjets MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnoblepveto_tonly", doData) ); // Compute fakes for ttbar MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnoblepveto_wonly", doData) ); // Compute fakes for wjets MC only
+  
+  analyses.push_back( new FakeRateAnalysis("wjetnoblepjetveto", doData) ); // Compute fakes for wjets MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnoblepjetveto_tonly", doData) ); // Compute fakes for ttbar MC only
+  analyses.push_back( new FakeRateAnalysis("wjetnoblepjetveto_wonly", doData) ); // Compute fakes for wjets MC only
+  
 
   FakesVariableCollection vars;
   vars.push_back( new FakesVariable("pt"     , 1) );

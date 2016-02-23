@@ -320,13 +320,15 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
 
   //event selection
-  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("wjet_eventflow", ";;Events", 6, 0., 6.));
-  h->GetXaxis()->SetBinLabel (1, "-");
-  h->GetXaxis()->SetBinLabel (2, "#geq 1 vertex");
-  h->GetXaxis()->SetBinLabel (3, "1 lepton (+veto)");
-  h->GetXaxis()->SetBinLabel (4, "M_{T}>50~GeV");
-  h->GetXaxis()->SetBinLabel (5, "#geq 1 jet");
-  h->GetXaxis()->SetBinLabel (6, "#geq 1 b-tags");
+  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("wjet_eventflow", ";;Events", 8, 0., 8.));
+  h->GetXaxis()->SetBinLabel(1, "-");
+  h->GetXaxis()->SetBinLabel(2, "#geq 1 vertex");
+  h->GetXaxis()->SetBinLabel(3, "1 lepton");
+  h->GetXaxis()->SetBinLabel(4, "M_{T}>50~GeV");
+  h->GetXaxis()->SetBinLabel(5, "#geq 1 jet");
+  h->GetXaxis()->SetBinLabel(6, "#leq 1 b-tags");
+  h->GetXaxis()->SetBinLabel(7, "leptons veto");
+  h->GetXaxis()->SetBinLabel(8, "#leq 1 hard jets");
   h = (TH1D*) mon.addHistogram (new TH1D ("qcd_eventflow", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "-");
   h->GetXaxis()->SetBinLabel (2, "#geq 1 vertex");
@@ -345,6 +347,8 @@ int main (int argc, char *argv[])
   controlCats.push_back("step4");
   controlCats.push_back("step5");
   controlCats.push_back("step6");
+  controlCats.push_back("step7");
+  controlCats.push_back("step8");
   
   std::vector<TString> tauDiscriminators;
   tauDiscriminators.clear();
@@ -541,7 +545,8 @@ int main (int argc, char *argv[])
           evt.getByLabel(ev, "generator");
           if(evt.isValid())
             {
-              weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+              //weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+              weightGen = evt->weight();
               if(debug) cout << "NNLO gen weight: " << evt->weight() << endl;
             }
           else
@@ -843,20 +848,19 @@ int main (int argc, char *argv[])
           //   }
 
           // apply muon corrections (Rochester - RunII)
-          if(abs(lid)==13){                                                                                                                                                           
-            if(muCor){                                                                                                                                                              
-              float qter;                                                                                                                                                           
-              TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());                                                                   
-              if(isMC){muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);                                                                                                              
-              }else{   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter);                                                                                                              
-              }                                                                                                                                                                     
-              muDiff -= leptons[ilep].p4();                                                                                                                                         
-              leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );                                                                                                 
-              muDiff += leptons[ilep].p4();                                                                                                                                         
-            }                                                                                                                                                                       
-          }        
-
-
+          if(abs(lid)==13){
+            if(muCor){         
+              float qter;
+              TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+              if(isMC)
+                muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
+              else
+                muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter);
+              muDiff -= leptons[ilep].p4();
+              leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
+              muDiff += leptons[ilep].p4();
+            }                  
+          }
           //no need for charge info any longer
           lid = abs (lid);
           TString lepStr(lid == 13 ? "mu" : "e");
@@ -879,7 +883,7 @@ int main (int argc, char *argv[])
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoKin = false;
 
           //Cut based identification 
-          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Tight) : patUtils::passId (leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
+          passId = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Tight) : patUtils::passId (leptons[ilep].mu, goodPV, patUtils::llvvMuonId::Tight);
           passVetoId = passId;
 
           //isolation
@@ -898,7 +902,7 @@ int main (int argc, char *argv[])
       for (size_t itau = 0; itau < taus.size(); ++itau)
         {
           pat::Tau& tau = taus[itau];
-          if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
+          if(tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
           
           bool overlapWithLepton(false);
           for(int l1=0; l1<(int)selLeptons.size();++l1){
@@ -971,24 +975,24 @@ int main (int argc, char *argv[])
           const reco::GenJet * genJet = jets[ijet].genJet();
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
           
+          //jet id
+          bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
+          float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
+          bool passLooseSimplePuId = true;//patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix.
+          if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.3) continue;
+
           //cross-clean with selected leptons and photons
           double minDRlj(9999.);
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
             minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
           
-          //jet id
-          bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);      //FIXME --> Need to be updated according to te latest recipe;
-          float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
-          bool passLooseSimplePuId = true;//patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix.
-          if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.3) continue;
-
           bool hasCSVtag( jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium );
 
           selQCDJets.push_back(jets[ijet]);
           if(hasCSVtag)
             selQCDBJets.push_back(jets[ijet]);
 
-          if (minDRlj < 0.4) continue; // Was 0.7
+          if(minDRlj < 0.4) continue;
 
           selWJetsJets.push_back(jets[ijet]);
           if(jets[ijet].pt()>40)
@@ -1019,11 +1023,12 @@ int main (int argc, char *argv[])
         wjetTags.push_back("wjet");
 
         // At least one event vertex
-        bool passVtxSelection(nGoodPV); // Ask someone about the offlineSkimmedPrimaryVertices collection
+        bool passVtx(nGoodPV);
         // One lepton
-        bool passLeptonSelection(selLeptons.size()==1);// && nVetoLeptons==0); 
-        if(passLeptonSelection) passLeptonSelection = (passLeptonSelection && (abs(selLeptons[0].pdgId()) == 13) );
-        if(passLeptonSelection) // Updated lepton selection
+        bool passLepton(selLeptons.size()==1);// && nVetoLeptons==0); 
+        bool passLeptonVeto(nVetoLeptons==0);
+        if(passLepton) passLepton = (passLepton && (abs(selLeptons[0].pdgId()) == 13) );
+        if(passLepton) // Updated lepton selection
           {
             int id(abs(selLeptons[0].pdgId()));                                                                                                                               
             weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[0].pt(), selLeptons[0].eta(), id,  id ==11 ? "tight"    : "tight"    ).first : 1.0; //ID               
@@ -1039,27 +1044,29 @@ int main (int argc, char *argv[])
             // Apply lepton efficiency
 
           }
-        bool passMtSelection(mt>50 );
+        bool passMt(mt>50 );
         // At least one jet not overlapping with the muon
-        bool passJetSelection(selWJetsJets.size()>0);
-        bool passBtagSelection(selWJetsBJets.size()==0); // Kill ttbar component
-        bool passHardJetsSelection(selHardJets.size()<2);
+        bool passJet(selWJetsJets.size()>0);
+        bool passBtag(selWJetsBJets.size()==0); // Kill ttbar component with btag veto
+        bool passHardJets(selHardJets.size()<2);
         
         
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
-                                                                                           { ctrlCats.push_back("step1"); mon.fillHisto("wjet_eventflow", wjetTags, 0, weight);}
-        if(passVtxSelection)                                                               { ctrlCats.push_back("step2"); mon.fillHisto("wjet_eventflow", wjetTags, 1, weight);}
-        if(passVtxSelection && passLeptonSelection)                                        { ctrlCats.push_back("step3"); mon.fillHisto("wjet_eventflow", wjetTags, 2, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection )                    { ctrlCats.push_back("step4"); mon.fillHisto("wjet_eventflow", wjetTags, 3, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection) { ctrlCats.push_back("step5"); mon.fillHisto("wjet_eventflow", wjetTags, 4, weight);}
-        if(passVtxSelection && passLeptonSelection && passMtSelection && passJetSelection && passBtagSelection) { ctrlCats.push_back("step6"); mon.fillHisto("wjet_eventflow", wjetTags, 5, weight);} 
+                                                                                                     { ctrlCats.push_back("step1"); mon.fillHisto("wjet_eventflow", wjetTags, 0, weight);}
+        if(passVtx)                                                                                  { ctrlCats.push_back("step2"); mon.fillHisto("wjet_eventflow", wjetTags, 1, weight);}
+        if(passVtx && passLepton)                                                                    { ctrlCats.push_back("step3"); mon.fillHisto("wjet_eventflow", wjetTags, 2, weight);}
+        if(passVtx && passLepton && passMt )                                                         { ctrlCats.push_back("step4"); mon.fillHisto("wjet_eventflow", wjetTags, 3, weight);}
+        if(passVtx && passLepton && passMt && passJet)                                               { ctrlCats.push_back("step5"); mon.fillHisto("wjet_eventflow", wjetTags, 4, weight);}
+        if(passVtx && passLepton && passMt && passJet && passBtag)                                   { ctrlCats.push_back("step6"); mon.fillHisto("wjet_eventflow", wjetTags, 5, weight);} 
+        if(passVtx && passLepton && passMt && passJet && passBtag && passLeptonVeto)                 { ctrlCats.push_back("step7"); mon.fillHisto("wjet_eventflow", wjetTags, 6, weight);} 
+        if(passVtx && passLepton && passMt && passJet && passBtag && passLeptonVeto && passHardJets) { ctrlCats.push_back("step8"); mon.fillHisto("wjet_eventflow", wjetTags, 7, weight);} 
         
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-          if(icat!="step5" && icat!="step6") continue; // Only for final selection step, for a quick test
+          if(icat!="step5" && icat!="step6" && icat!="step7" && icat!="step8") continue; // Only for final selection step, for a quick test
           
           
           // Fake rate: 
@@ -1086,8 +1093,8 @@ int main (int argc, char *argv[])
                 pat::Tau theTau;
                 for (pat::TauCollection::iterator tau=selIdTaus[l].begin(); tau!=selIdTaus[l].end(); ++tau)
                   {
+                    if(deltaR(*jet, *tau) < minDRtj) theTau=*tau;
                     minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
-                    theTau=*tau;
                   }
                 if(minDRtj>0.4) continue;
                 if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
@@ -1127,10 +1134,10 @@ int main (int argc, char *argv[])
 
 
         // At least one event vertex
-        bool passVtxSelection(nGoodPV); // Ask someone about the offlineSkimmedPrimaryVertices collection
+        bool passVtx(nGoodPV); // Ask someone about the offlineSkimmedPrimaryVertices collection
         // At least two jets
         // Insert trigger matching here, which will fix the incomplete jet selection step
-        bool passJetSelection(selQCDJets.size()>1);
+        bool passJet(selQCDJets.size()>1);
 
         // Check trigger firing:
         int jetsFiring(0);
@@ -1165,20 +1172,20 @@ int main (int argc, char *argv[])
           }
         }
         // At least one of the jets is required to be matched with the one firing HLT
-        if(jetsFiring<1) passJetSelection=false;
+        if(jetsFiring==0) passJet=false;
         
         // Lepton veto, like a boss
-        bool passLeptonVeto(selLeptons.size()==0 && nVetoLeptons==0); 
+        bool passLepton(selLeptons.size()==0 && nVetoLeptons==0); 
         
         
 
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-                                                                   { ctrlCats.push_back("step1"); mon.fillHisto("qcd_eventflow", qcdTags, 0, weight);}
-        if(passVtxSelection   )                                    { ctrlCats.push_back("step2"); mon.fillHisto("qcd_eventflow", qcdTags, 1, weight);}
-        if(passVtxSelection && passJetSelection)                   { ctrlCats.push_back("step3"); mon.fillHisto("qcd_eventflow", qcdTags, 2, weight);}
-        if(passVtxSelection && passJetSelection && passLeptonVeto) { ctrlCats.push_back("step4"); mon.fillHisto("qcd_eventflow", qcdTags, 3, weight);}
+                                             { ctrlCats.push_back("step1"); mon.fillHisto("qcd_eventflow", qcdTags, 0, weight);}
+        if(passVtx   )                       { ctrlCats.push_back("step2"); mon.fillHisto("qcd_eventflow", qcdTags, 1, weight);}
+        if(passVtx && passJet)               { ctrlCats.push_back("step3"); mon.fillHisto("qcd_eventflow", qcdTags, 2, weight);}
+        if(passVtx && passJet && passLepton) { ctrlCats.push_back("step4"); mon.fillHisto("qcd_eventflow", qcdTags, 3, weight);}
         
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
@@ -1191,7 +1198,7 @@ int main (int argc, char *argv[])
           for(pat::JetCollection::iterator jet=selQCDJets.begin(); jet!=selQCDJets.end(); ++jet)
             {
               if(jet->pt() < 20 || abs(jet->eta())>2.3) continue;
-
+              
               // Multi-jet event: the trigger jet is excluded from the fake rate computation if there is only one jet that passes the trigger requirement
               // In case more than one jet passes the requirement, all are used
               if(jetsFiring==1)
@@ -1218,8 +1225,8 @@ int main (int argc, char *argv[])
                 pat::Tau theTau;
                 for (pat::TauCollection::iterator tau=selIdTaus[l].begin(); tau!=selIdTaus[l].end(); ++tau)
                   {
+                    if(deltaR(*jet, *tau) < minDRtj) theTau=*tau;
                     minDRtj = TMath::Min(minDRtj, deltaR(*jet, *tau));
-                    theTau=*tau;
                   }
                 if(minDRtj>0.4) continue;
                 if(theTau.pt()<20. || theTau.eta()>2.3) continue; // Numerator has both requirements (jet and tau) for pt and eta
