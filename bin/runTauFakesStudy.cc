@@ -264,6 +264,7 @@ int main (int argc, char *argv[])
   
   bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
   bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL_50toInf") || dtag.Contains ("WJets")));
+  bool isControlWJets (isMC && dtag.Contains("W_Jets"));
   bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco"));
   bool isNLOMC      (isMC && (TString(urls[0]).Contains("amcatnlo") || TString(urls[0]).Contains("powheg")) );
 
@@ -337,6 +338,7 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (5, "(Unused)");
   h->GetXaxis()->SetBinLabel (6, "(Unused)");
 
+  mon.addHistogram(new TH1D("lheHt", ";;Events", 50, 0., 1000.));
 
   // Setting up control categories
   std::vector < TString > controlCats;
@@ -556,7 +558,7 @@ int main (int argc, char *argv[])
 
         }
       
-      if(debug) cout << "Gen weight: " << weightGen << endl;
+      //if(debug) cout << "Gen weight: " << weightGen << endl;
 
       std::vector < TString > tags (1, "all");
 
@@ -568,6 +570,42 @@ int main (int argc, char *argv[])
 
       // Skip bad lumi                                                                                                                              
       if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue;
+
+            
+      //
+      // DERIVE WEIGHTS TO APPLY TO SAMPLE
+      //
+
+      //pileup weight
+      double weight(weightGen);
+      double TotalWeight_plus(1.0);
+      double TotalWeight_minus(1.0);
+      double puWeight(1.0);
+
+      if(isMC)
+        {
+          int ngenITpu(0);
+          
+          fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+          puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
+          for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+            {
+              if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+            }
+          //ngenITpu=nGoodPV; // based on nvtx
+          puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
+          weight *= puWeight;
+          TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
+          TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
+        }
+      
+      
+      mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1     
+      mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1                                                            
+      mon.fillHisto("initNorm", tags, 2, puWeight);
+      mon.fillHisto("initNorm", tags, 3, TotalWeight_plus);
+      mon.fillHisto("initNorm", tags, 4, TotalWeight_minus);
+
 
       //apply trigger and require compatibilitiy of the event with the PD
       edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
@@ -746,11 +784,9 @@ int main (int argc, char *argv[])
       // Old stitching for exclusive jets samples    mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
       // Old stitching for exclusive jets samples  }
       
-
-
      
       // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
-      if(isV0JetsMC)
+      if(isV0JetsMC || isControlWJets)
         {
           // access generator level HT
           fwlite::Handle<LHEEventProduct> lheEventProduct;
@@ -768,42 +804,12 @@ int main (int argc, char *argv[])
           lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.)); // first entry is px, second py
             } 
           }
-          if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl; 
-          weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
+          if(debug) cout << "Sample: " << dtag << " has isV0JetsMC " << isV0JetsMC << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl; 
+          if(isV0JetsMC) weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
+          if(debug) cout << "WeightGen is consequently " << weightGen << endl;
+          mon.fillHisto("lheHt", tags, lheHt, weightGen);
         }
-            
-      //
-      // DERIVE WEIGHTS TO APPLY TO SAMPLE
-      //
 
-      //pileup weight
-      double weight = 1.0;
-      double TotalWeight_plus = 1.0;
-      double TotalWeight_minus = 1.0;
-      double puWeight (1.0);
-
-      if(isMC)
-        {
-          int ngenITpu = 0;
-          
-          fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-          puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
-          for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-            {
-              if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-            }
-          //ngenITpu=nGoodPV; // based on nvtx
-          puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight *= puWeight;
-          TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
-          TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
-        }
-      
-      mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1                                                                  
-      mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1                                                                  
-      mon.fillHisto("initNorm", tags, 2, puWeight);
-      mon.fillHisto("initNorm", tags, 3, TotalWeight_plus);
-      mon.fillHisto("initNorm", tags, 4, TotalWeight_minus);
 
       //
       //
@@ -906,7 +912,7 @@ int main (int argc, char *argv[])
           
           bool overlapWithLepton(false);
           for(int l1=0; l1<(int)selLeptons.size();++l1){
-            if(deltaR(tau, selLeptons[l1])<0.4){overlapWithLepton=true; break;}
+            if(deltaR(tau, selLeptons[l1])<0.4){overlapWithLepton=true;}
           }
           if(overlapWithLepton) continue;
           
@@ -1025,7 +1031,7 @@ int main (int argc, char *argv[])
         // At least one event vertex
         bool passVtx(nGoodPV);
         // One lepton
-        bool passLepton(selLeptons.size()==1);// && nVetoLeptons==0); 
+        bool passLepton(selLeptons.size()==1);
         bool passLeptonVeto(nVetoLeptons==0);
         if(passLepton) passLepton = (passLepton && (abs(selLeptons[0].pdgId()) == 13) );
         if(passLepton) // Updated lepton selection
@@ -1066,7 +1072,7 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-          if(icat!="step5" && icat!="step6" && icat!="step7" && icat!="step8") continue; // Only for final selection step, for a quick test
+          //if(icat!="step5" && icat!="step6" && icat!="step7" && icat!="step8") continue; // Only for final selection step, for a quick test
           
           
           // Fake rate: 
@@ -1191,7 +1197,7 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-          if(icat!="step3" && icat!="step4") continue; // Only for final selection step, for a quick test
+          //if(icat!="step3" && icat!="step4") continue; // Only for final selection step, for a quick test
           
           // Fake rate: 
           // fr = (pt_jet>20 && |eta_jet| <2.3 && pt_tau>20 && |eta_tau|<2.3 && DM-finding && tauID) / (pt_jet>20 && |eta_jet| <2.3)
