@@ -405,7 +405,11 @@ int main (int argc, char *argv[])
           dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
         }
       std::vector < float >mcPileupDistribution;
-      utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
+
+      double totalNumEvent = utils::getMCPileupDistributionAndTotalEventFromMiniAOD(urls, dataPileupDistribution.size(), mcPileupDistribution);
+      xsecWeight/=totalNumEvent;
+
+      //utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
       while (mcPileupDistribution.size () < dataPileupDistribution.size ()) mcPileupDistribution.push_back (0.0);
       while (mcPileupDistribution.size () > dataPileupDistribution.size ()) dataPileupDistribution.push_back (0.0);
       gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -418,7 +422,18 @@ int main (int argc, char *argv[])
   
   //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
   
-  
+  patUtils::MetFilter metFiler;
+  if(!isMC)
+    {
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
+
+        //FIXME, we need to add here the single mu, single el, and gamma path
+    }
 
 
 
@@ -566,7 +581,7 @@ int main (int argc, char *argv[])
       if(debug) cout << "Event passed at least one trigger: jet " << jetTrigger << ", muon " << muTrigger << endl;
 
       // // -------------- Apply MET filters -------------------
-      // if( !isMC && !metFiler.passMetFilter(ev)) continue;
+      if( !isMC && !metFiler.passMetFilterInt(ev)) continue;
 
 
       //load all the objects we will need to access
@@ -877,7 +892,7 @@ int main (int argc, char *argv[])
       //JET/MET ANALYSIS
       //
       //add scale/resolution uncertainties and propagate to the MET      
-      //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);  //FIXME if still needed
+      utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);  //FIXME if still needed
       //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
       
       //select the jets
