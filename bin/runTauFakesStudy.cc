@@ -644,7 +644,7 @@ int main (int argc, char *argv[])
       
       if(debug) cout << "Triggers: jet " << jetTrigger << ", muon " << muTrigger << endl;
 
-      if (!(jetTrigger || muTrigger)){ nSkipped++; continue;}         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+      if (!jetTrigger && !muTrigger){ nSkipped++; continue;}         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
 
       if(debug) cout << "Event passed at least one trigger: jet " << jetTrigger << ", muon " << muTrigger << endl;
@@ -966,7 +966,7 @@ int main (int argc, char *argv[])
       
       //select the jets
 
-      utils::cmssw::updateJEC(jets, jesCor, totalJESUnc, rho, nGoodPV, isMC);
+      //utils::cmssw::updateJEC(jets, jesCor, totalJESUnc, rho, nGoodPV, isMC);
 
       pat::JetCollection
         selWJetsJets, selQCDJets,

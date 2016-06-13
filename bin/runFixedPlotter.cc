@@ -145,8 +145,6 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	      if(!useMerged && Samples[id].isTag("split"))split = Samples[id]["split"].toInt();
 
 	      string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",0); segmentExt += buf; }
-
-              if(split==1) segmentExt="";
               // TEST // string secondFiltExt=filtExt;
               string secondFiltExt("");
               // TEST // if(TString((Samples[id])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
@@ -165,7 +163,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	    }
 	}
 
-      //for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++){printf("%s\n",it->name.c_str()); }
+    //for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++){printf("%s\n",it->name.c_str()); }
 
       return;
    }
@@ -245,8 +243,6 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
          // TEST // if(TString((Samples[j])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
          for(int s=0;s<split;s++){
 	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
-
-           if(split==1) segmentExt ="";
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             TFile* File = TFile::Open(FileName.c_str());
             bool& fileExist = FileExist[FileName];
@@ -338,7 +334,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; /*if(split>1)*/{ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
-           if(split==1) segmentExt="";
+	   
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
@@ -471,8 +467,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
-           
-           if(split==1) segmentExt="";
+	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
@@ -591,7 +586,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; } 
-           if(split==1) segmentExt="";
+	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
@@ -704,17 +699,13 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
-           
-           if(split==1) segmentExt="";
-           
-           string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
 
-           if(debug) cout << "I am processing "  << FileName << " for extracting histogram " << HistoProperties.name << endl;
-           if(!FileExist[FileName]){
-              cout << FileName << " does not exist " << endl;
+	    string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
+            if(!FileExist[FileName]){
+              //cout << FileName << " does not exist " << endl;
               continue;}
-           TFile* File = new TFile(FileName.c_str());
-           if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){ cout << FileName << " not recovered" << endl; continue;}
+            TFile* File = new TFile(FileName.c_str());
+            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){ cout << FileName << " not recovered" << endl; continue;}
             TH1* tmptmphist = NULL; 
             if(HistoProperties.isIndexPlot && cutIndex>=0){
                TH2* tmp2D = (TH2*) GetObjectFromPath(File,HistoProperties.name);
@@ -726,7 +717,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
                tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name);
 	    }
 	    if(!tmptmphist){
-              if(debug) cout << FileName << " histogram " << HistoProperties.name << " does not exist " << endl; 
+              //cout << FileName << " histogram " << HistoProperties.name << " does not exist " << endl; 
               delete File;continue;}
             if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
             //if(Process[i]["isdata"].toBool())printf("%s --> %f\n",(Samples[j])["dtag"].toString().c_str(), tmptmphist->Integral());
@@ -738,11 +729,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
-      if(!hist){
-        cout << "Histogram " << HistoProperties.name << " does not exist." << endl;
-        continue;
-      }
-      if(debug) cout << "Histogram " << HistoProperties.name << " exists, and it will be called == " << hist->GetName() << endl;
+      if(!hist)continue;
+
       SaveName = hist->GetName();
       myPseudoDataName=hist->GetName();
       TString postfix(""); postfix+=i;
@@ -763,7 +751,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
         fixExtremities(hist,true,true);
       //else
       //  fixExtremities(hist,true,false);
-      hist->SetTitle("");
+            hist->SetTitle("");
       hist->SetStats(kFALSE);
       if( jodorStyle){
 	//hist->SetMinimum(5e-2);
@@ -845,9 +833,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        canvasIsFilled=true;
    }
    
-   TH1* pseudoData = NULL;
-   if(mc) pseudoData = (TH1*) mc->Clone("pseudoData");
-   if(pseudoData) checkSumw2(pseudoData);
+   TH1* pseudoData = (TH1*) mc->Clone("pseudoData");
+   checkSumw2(pseudoData);
    if(generatePseudoData){
      GeneratePseudoData(pseudoData,mc);
      legA->AddEntry(pseudoData, "pseudo-data", "P");	 
@@ -909,7 +896,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    else{
      if(iLumi>100) sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
      else          sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm, iLumi);
-
    }
    T->AddText(Buffer);
    T->Draw("same");
@@ -1071,7 +1057,6 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
          for(int s=0;s<split;s++){
 	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 
-           if(split==1) segmentExt="";
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
@@ -1235,7 +1220,6 @@ int main(int argc, char* argv[]){
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
         printf("--forceMerge --> merge splitted samples\n");
 	printf("--useMerged --> use merged splitted samples\n");
-        printf("--debug --> Print out debugging messages\n");
 	printf("--jodorStyle --> use plotting style requested from Jodor");
         printf("--generatePseudoData --> generate pseudo-data by poisson-smearing the total SM MC distribution");
         
@@ -1270,7 +1254,6 @@ int main(int argc, char* argv[]){
      if(arg.find("--isSim")!=string::npos){ isSim = true;    }
      if(arg.find("--forceMerge")!=string::npos){ forceMerge = true;  useMerged=true;  }
      if(arg.find("--useMerged")!=string::npos){ useMerged = true;    }
-     if(arg.find("--debug")!=string::npos){ debug = true;    }
      if(arg.find("--jodorStyle")!=string::npos){ jodorStyle = true;  }
      if(arg.find("--generatePseudoData")!=string::npos){ generatePseudoData = true; }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }

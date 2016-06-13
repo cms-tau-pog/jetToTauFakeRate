@@ -5,6 +5,7 @@
 # 1: run the analysis (must merge submit script here)
 
 JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
+#JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples_400.json
 ###JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjet_stitch.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples_wjet.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd.json
@@ -15,10 +16,7 @@ JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
 
 QUEUE=1nh
 
-# 1 is with NNLO weights and oldDM (in principle. It is not called oldDM)
-# 2 is with NNLO weights and newDM
-# 3 is with NNLO weights and oldDM and better lepton cleaning
-OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes_3/
+OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes/
 #QUEUE=8nm
 #OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes8nm/
 
@@ -40,7 +38,7 @@ elif [ "${1}" = "lumi" ]; then
     cat ${OUTDIR}/*JetHT*json > qcd_lumi.json
     cat ${OUTDIR}/*SingleMuon*json > wjet_lumi.json
     
-    STARTINGJSON="data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    STARTINGJSON="data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
     sed -i -e "s#}{#,#g"  qcd_lumi.json; 
     sed -i -e "s#, ,#,#g" qcd_lumi.json;
     sed -i -e "s#,,#,#g"  qcd_lumi.json;
@@ -50,6 +48,8 @@ elif [ "${1}" = "lumi" ]; then
     sed -i -e "s#,,#,#g"  qcd_lumi.json;
     sed -i -e "s#,,#,#g"  qcd_lumi.json;
     sed -i -e "s#{,#{#g"  qcd_lumi.json;
+    sed -i -e "s#{,#{#g"  qcd_lumi.json;
+    sed -i -e "s#{ ,#{#g"  qcd_lumi.json;
 
     sed -i -e "s#}{#,#g"  wjet_lumi.json; 
     sed -i -e "s#, ,#,#g" wjet_lumi.json;
@@ -60,6 +60,8 @@ elif [ "${1}" = "lumi" ]; then
     sed -i -e "s#,,#,#g"  wjet_lumi.json;
     sed -i -e "s#,,#,#g"  wjet_lumi.json;
     sed -i -e "s#{,#{#g"  wjet_lumi.json;
+    sed -i -e "s#{,#{#g"  wjet_lumi.json;
+    sed -i -e "s#{ ,#{#g"  wjet_lumi.json;
 
     export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH 
     ### Official v1 brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i myjson.json
@@ -102,6 +104,8 @@ elif [ "${1}" = "plot" ]; then
     #LUMIQCD=277
     #LUMIWJETS=336
     #LUMIQCD=729
+    #LUMIWJETS=365
+    #LUMIQCD=380
 
     JSONFILEWJETS=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/wjets_samples.json
     JSONFILEQCD=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/qcd_samples.json
@@ -113,18 +117,18 @@ elif [ "${1}" = "plot" ]; then
     ONLYQCD="--onlyStartWith qcd"
     PLOTEXT=" --plotExt .png --plotExt .pdf --plotExt .C "
     
-    MERGE="--forceMerge"
+    #MERGE="--forceMerge"
     #MERGE="--useMerged"
-    #MERGE=""
+    MERGE=""
     
     ## Create plotter files from which the ratio for fake rate will be computed
     # WJets
     runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} ${RUNINBACKGROUND} 
     #runFixedPlotter --iEcm 13 --debug --forceMerge --iLumi ${LUMIWJETS} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERWJETS} --json ${JSONFILEWJETS} --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYWJETS} ${RUNINBACKGROUND} 
-
+    
     # QCD
     runFixedPlotter --iEcm 13 ${MERGE} --iLumi ${LUMIQCD} --inDir ${INDIR} --outDir ${DIR} --outFile ${PLOTTERQCD}   --json ${JSONFILEQCD}   --cutflow all_initNorm --no2D --noPowers ${PLOTEXT} ${ONLYQCD} ${RUNINBACKGROUND} 
-
+    
     DIR="${BASEWEBDIR}_split/"
     PLOTTERWJETS=${DIR}plotter_wjet.root
     PLOTTERQCD=${DIR}plotter_qcd.root

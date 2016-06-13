@@ -1,0 +1,17 @@
+{
+  "proc":[
+    {   
+      "tag":"W,multijets",
+      "isdata":false,
+      "color":809,
+      "lcolor":1,
+      "destination":"wjets selection",
+      "data":[
+	{ "dtag":"MC13TeV_WJets_LO_inc"                             , "split":400, "xsec":50690.0       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    }
+  ]
+}
+
+
+
