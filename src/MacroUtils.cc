@@ -61,7 +61,7 @@ namespace utils
          return toRet;
      }
      
-     void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC){
+     void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, double rho, int nvtx,bool isMC){
          for(size_t ijet=0; ijet<jets.size(); ijet++){
              pat::Jet& jet = jets[ijet];
              
@@ -116,7 +116,7 @@ namespace utils
          }
      }
      
-//    //
+//    
 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
 //    {
 //      std::vector<LorentzVector> newMetsP4(9,rawMETP4);

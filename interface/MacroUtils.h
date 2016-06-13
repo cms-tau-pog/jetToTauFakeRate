@@ -142,14 +142,10 @@ namespace utils
   
 
 
-    // JES/JER Smearing
-//    std::vector<double> smearJER(double pt, double eta, double genPt);
-//    std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc);
-//    
-//    //set new jet energy corrections
-//    void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, double rho, int nvtx,bool isMC);
-//    
-//    //apply MET variations
+    //set new jet energy corrections
+    void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, double rho, int nvtx,bool isMC);
+    
+    //apply MET variations
 //    enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };
 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons, bool isMC);
     

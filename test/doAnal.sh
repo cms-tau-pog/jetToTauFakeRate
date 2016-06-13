@@ -21,7 +21,7 @@ OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes/
 #OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes8nm/
 
 
-BASEWEBDIR=~/www/13TeV_tauFakes_25ns
+BASEWEBDIR=~/www/13TeV_tauFakes_25ns_2016
 
 
 if [ "${1}" = "submit" ]; then
@@ -166,6 +166,10 @@ elif [ "${1}" = "harvest" ]; then
     # Fix. --plotExt does not really impact (extensions are multiple and hardcoded)
     # Configurable input directory
     runFakeRate --inDir ${BASEWEBDIR}/ --outDir fakerate --plotExt .png
+
+elif [ "${1}" = "runtests" ]; then
+    root -l macros/ht/plotStuff.C
+    root -l macros/qcdtest/plotStuff.C
 
 fi
 
