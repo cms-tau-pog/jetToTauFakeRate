@@ -623,6 +623,213 @@ namespace patUtils
     return passExclusiveDataEventFilter;
   }
 
+void MetFilter::FillBadEvents(std::string path){
+     unsigned int Run=0; unsigned int Lumi=1; unsigned int Event=2;
+     //LOOP on the files and fill the map
+     std::ifstream File;
+     File.open(path.c_str());
+     if(!File.good() ){
+       std::cout<<"ERROR:: File "<<path<<" NOT FOUND!!"<<std::endl; 
+       return;
+     }
+
+     std::string line;
+     while ( File.good() ){
+         getline(File, line);
+         std::istringstream stringfile(line);
+         stringfile >> Run >> Lumi >> Event >> std::ws;
+         map[RuLuEv(Run, Lumi, Event)] += 1;
+    }
+    File.close();
+}
+
+
+int MetFilter::passMetFilterInt(const fwlite::Event& ev){  
+     if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;
+
+    // Legacy: the different collection name was necessary with the early 2015B prompt reco        
+//    edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
+    edm::TriggerResultsByName metFilters = ev.triggerResultsByName("PAT");   //is present only if PAT (and miniAOD) is not run simultaniously with RECO
+    if(!metFilters.isValid()){metFilters = ev.triggerResultsByName("RECO");} //if not present, then it's part of RECO
+    if(!metFilters.isValid()){       
+       printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");    
+    }
+
+
+    // Documentation:    
+    // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
+    // Flag_trackingFailureFilter
+    // Flag_goodVertices                        -------> Recommended by PAG
+    // Flag_CSCTightHaloFilter                  -------> Recommended by PAG
+    // Flag_trkPOGFilters
+    // Flag_trkPOG_logErrorTooManyClusters
+    // Flag_EcalDeadCellTriggerPrimitiveFilter  -------> Recommended by PAG
+    // Flag_ecalLaserCorrFilter
+    // Flag_trkPOG_manystripclus53X
+    // Flag_eeBadScFilter                       -------> Recommended by PAG
+    // Flag_METFilters
+    // Flag_HBHENoiseFilter                     -------> Recommended by PAG
+    // Flag_trkPOG_toomanystripclus53X
+    // Flag_hcalLaserEventFilter
+ 
+
+    // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
+    // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
+    // - For Run2015B PromptReco Data, the process name is RECO.
+    // - For Run2015B re-MiniAOD Data 17Jul2015, the process name is PAT.
+    // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
+    // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
+    // -------------------------------------------------
+
+    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter"                     )) return 2; 
+    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"                           )) return 3;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"                          )) return 4;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_EcalDeadCellTriggerPrimitiveFilter"     )) return 5;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"                        )) return 6;
+
+/*    
+    // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
+    //if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )) return false; // Needs to be rerun for both data (prompt+reReco) and MC, for now.
+    // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
+
+    HcalNoiseSummary summary;
+    fwlite::Handle <HcalNoiseSummary> summaryHandle;
+    summaryHandle.getByLabel(ev, "hcalnoise");
+    if(summaryHandle.isValid()) summary=*summaryHandle;
+
+    //HBHE NOISE
+    if(summary.maxHPDHits() >= 17)return 6;
+    if(summary.maxHPDNoOtherHits() >= 10)return 7;
+    if( summary.maxZeros() >= 9e9) return 8;
+    if(summary.HasBadRBXRechitR45Loose())return 9;  //for 25ns only!  CHeck the recipe for 50ns.
+//    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
+    // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
+//    if((failCommon || summary.HasBadRBXRechitR45Loose() )) return 5;  //for 25ns only
+   
+     //HBHE ISO NOISE
+     if(summary.numIsolatedNoiseChannels() >=10)return 10;
+     if(summary.isolatedNoiseSumE() >=50) return 11;
+     if(summary.isolatedNoiseSumEt() >=25) return 12;
+*/
+     return 0;
+}
+
+bool MetFilter::passMetFilter(const fwlite::Event& ev){
+   return passMetFilterInt(ev)==0;
+}
+
+std::pair<double, double> scaleVariation(const fwlite::Event& ev){
+	//std::cout << " " << std::endl;
+	//std::cout << "STARTING SCALE-VARIATION Estimation" << std::endl;
+        fwlite::Handle<LHEEventProduct> lheEPHandle;
+        lheEPHandle.getByLabel( ev, "externalLHEProducer");
+        double scaleUp = 1.;
+        double scaleDw = 1.;
+        bool check_in = false;
+        std::vector<int> idVect;
+	std::vector<int>::iterator it;
+        if( lheEPHandle.isValid() ){
+                for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        std::string::size_type sz;
+                        double id = std::stod( lheEPHandle->weights()[i].id, &sz);
+                        idVect.push_back( id );
+                }
+		for( unsigned int k=1001; k<1010; k++){
+			it = find( idVect.begin(), idVect.end(), k);
+			if( it != idVect.end() ){ check_in = true; }
+			else{ check_in = false; }
+		}
+		if( check_in ){
+                	for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        	if( lheEPHandle->weights()[i].id != "1001" || lheEPHandle->weights()[i].id != "1006" || lheEPHandle->weights()[i].id != "1008" ){
+                                	double local_weight = 0;
+                                	local_weight = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
+					//std::cout << "Local weight: " << local_weight << std::endl; 
+                                	scaleUp = std::max(scaleUp, local_weight);
+                                	scaleDw = std::min(scaleDw, local_weight);
+                        	}
+                 	}
+			
+		 } else { scaleUp = 1.;  scaleDw = 1.;}
+         }
+	 //std::cout << "ScaleUp Value: " << scaleUp << "; ScaleDwn Value: " << scaleDw << std::endl;
+	 return std::make_pair(scaleUp, scaleDw);
+}
+
+double pdfVariation(const fwlite::Event& ev){
+	//std::cout << "  " << std::endl;
+	//std::cout << "STARTING PDF Estimation" << std::endl;
+        fwlite::Handle<LHEEventProduct> lheEPHandle;
+        lheEPHandle.getByLabel( ev, "externalLHEProducer");
+        int N = 0;
+        double pdfVar = 0;
+        double sum = 0;
+        bool check_in = false;
+        std::vector<int> idVect;
+        std::vector<int>::iterator it;
+        if( lheEPHandle.isValid() ){
+                for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        std::string::size_type sz;
+                        double id = std::stod( lheEPHandle->weights()[i].id, &sz);
+                        idVect.push_back( id );
+                }
+                for( unsigned int k=2001; k<2101; k++){
+                        it = find( idVect.begin(), idVect.end(), k);
+                        if( it != idVect.end() ){ check_in = true; }
+                        else{ check_in = false; }
+                }
+                if( check_in ){
+                	for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        	std::string::size_type sz;
+                        	double id = std::stod( lheEPHandle->weights()[i].id, &sz); 
+                                if( id<2001 || id>2100 ) continue;	
+				//std::cout << "Weight: " << lheEPHandle->weights()[i].wgt << "; Nominal Weight: " << lheEPHandle->originalXWGTUP() << std::endl;
+                                sum += std::pow( (lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() - 1 ), 2);
+                                N++; 
+                                	
+                        }	
+			pdfVar = 1+ std::sqrt( sum/ ( N -1 ) ); //+1 variation
+        	} else { pdfVar = 1.; }
+	}
+        return pdfVar;
+}
+
+double alphaVariation(const fwlite::Event& ev){
+        //std::cout << "  " << std::endl;
+        //std::cout << "STARTING ALPHA Estimation" << std::endl;
+        fwlite::Handle<LHEEventProduct> lheEPHandle;
+        lheEPHandle.getByLabel( ev, "externalLHEProducer");
+        double alphaVar = 0;
+        double local_alpha_one = 0;
+        double local_alpha_two = 0;
+	std::vector<int> idVect;
+        std::vector<int>::iterator itone, ittwo;
+        if( lheEPHandle.isValid() ){
+                for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        std::string::size_type sz;
+                        double id = std::stod( lheEPHandle->weights()[i].id, &sz);		
+			idVect.push_back( id );
+		}
+		itone = find( idVect.begin(), idVect.end(), 2101);
+		ittwo = find( idVect.begin(), idVect.end(), 2102);
+		if( itone != idVect.end() && ittwo != idVect.end() ){
+			for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        	std::string::size_type sz;
+                        	double id = std::stod( lheEPHandle->weights()[i].id, &sz);	
+                        	if( ( id == 2101 ) ){
+                                	local_alpha_one = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
+                        	} else if( ( id == 2102 ) ){
+                                	local_alpha_two = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
+                        	}
+				//std::cout << "alpha one: " << local_alpha_one << "; alpha two: " << local_alpha_two << "; Nominal: " << lheEPHandle->originalXWGTUP() << std::endl;
+                	}
+			alphaVar = 1+std::sqrt(0.75)*std::abs( local_alpha_one - local_alpha_two )*0.5; //+1 variation
+		} else { alphaVar = 1; }
+        }
+	//std::cout << "Alpha Uncertainties: " << alphaVar << std::endl;
+        return alphaVar;
+}
+  
   
   double getHTScaleFactor(TString dtag, double lheHt)
   {
@@ -692,98 +899,6 @@ namespace patUtils
 
 
   
-void MetFilter::FillBadEvents(std::string path){
-     unsigned int Run=0; unsigned int Lumi=1; unsigned int Event=2;
-     //LOOP on the files and fill the map
-     std::ifstream File;
-     File.open(path.c_str());
-     if(!File.good() ){
-       std::cout<<"ERROR:: File "<<path<<" NOT FOUND!!"<<std::endl; 
-       return;
-     }
-
-     std::string line;
-     while ( File.good() ){
-         getline(File, line);
-         std::istringstream stringfile(line);
-         stringfile >> Run >> Lumi >> Event >> std::ws;
-         map[RuLuEv(Run, Lumi, Event)] += 1;
-    }
-    File.close();
-}
-
-
-
-int MetFilter::passMetFilterInt(const fwlite::Event& ev){  
-     if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;
-
-    // Legacy: the different collection name was necessary with the early 2015B prompt reco        
-//    edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
-    edm::TriggerResultsByName metFilters = ev.triggerResultsByName("PAT");   //is present only if PAT (and miniAOD) is not run simultaniously with RECO
-    if(!metFilters.isValid()){metFilters = ev.triggerResultsByName("RECO");} //if not present, then it's part of RECO
-    if(!metFilters.isValid()){       
-       printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");    
-    }
-
-
-    // Documentation:    
-    // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
-    // Flag_trackingFailureFilter
-    // Flag_goodVertices        -------> Recommended by PAG
-    // Flag_CSCTightHaloFilter  -------> Recommended by PAG
-    // Flag_trkPOGFilters
-    // Flag_trkPOG_logErrorTooManyClusters
-    // Flag_EcalDeadCellTriggerPrimitiveFilter
-    // Flag_ecalLaserCorrFilter
-    // Flag_trkPOG_manystripclus53X
-    // Flag_eeBadScFilter       -------> Recommended by PAG
-    // Flag_METFilters
-    // Flag_HBHENoiseFilter     -------> Recommended by PAG
-    // Flag_trkPOG_toomanystripclus53X
-    // Flag_hcalLaserEventFilter
-    //
-    // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
-    // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
-    // - For Run2015B PromptReco Data, the process name is RECO.
-    // - For Run2015B re-MiniAOD Data 17Jul2015, the process name is PAT.
-    // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
-    // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
-    // -------------------------------------------------
-
-    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")) return 2; 
-    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      )) return 3;
-    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )) return 4;
-
-    // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
-    //if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )) return false; // Needs to be rerun for both data (prompt+reReco) and MC, for now.
-    // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
-
-    HcalNoiseSummary summary;
-    fwlite::Handle <HcalNoiseSummary> summaryHandle;
-    summaryHandle.getByLabel(ev, "hcalnoise");
-    if(summaryHandle.isValid()) summary=*summaryHandle;
-
-    //HBHE NOISE
-    if(summary.maxHPDHits() >= 17)return 5;
-    if(summary.maxHPDNoOtherHits() >= 10)return 6;
-    if( summary.maxZeros() >= 9e9) return 7;
-    if(summary.HasBadRBXRechitR45Loose())return 8;  //for 25ns only!  CHeck the recipe for 50ns.
-//    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
-    // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
-//    if((failCommon || summary.HasBadRBXRechitR45Loose() )) return 5;  //for 25ns only
-   
-     //HBHE ISO NOISE
-     if(summary.numIsolatedNoiseChannels() >=10)return 9;
-     if(summary.isolatedNoiseSumE() >=50) return 10;
-     if(summary.isolatedNoiseSumEt() >=25) return 11;
-
-     return 0;
-   }
-
-
-bool MetFilter::passMetFilter(const fwlite::Event& ev){
-   return passMetFilterInt(ev)==0;
-}
 
 
 }
