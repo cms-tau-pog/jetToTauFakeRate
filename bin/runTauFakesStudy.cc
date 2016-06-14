@@ -914,7 +914,7 @@ int main (int argc, char *argv[])
           
           //jet id
           bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
-          float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
+          //float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
           bool passLooseSimplePuId = true;//patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix.
           if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <20 || fabs(jets[ijet].eta()) > 2.3) continue;
 
