@@ -8,7 +8,11 @@
       "destination":"wjets selection",
       "twikixsec":"20508.9",
       "data":[
-        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+	{ "dtag":"MC13TeV_WJets_LO_inc"                             , "split":400, "xsec":1.0, "dummyxsec":50690.0       , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext4-v1/MINIAODSIM"]},
+	{ "dtag":"MC13TeV_WJets_LO_100To200"                             , "split":400, "xsec":1.0, "dummyxsec":1345.0       , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM", "/WJetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext1-v1/MINIAODSIM"]},
+	{ "dtag":"MC13TeV_WJets_LO_200To400"                             , "split":400, "xsec":1.0, "dummyxsec":359.7       , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM", "/WJetsToLNu_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext1-v1/MINIAODSIM"]},
+	{ "dtag":"MC13TeV_WJets_LO_400To600"                             , "split":400, "xsec":1.0, "dummyxsec":48.91       , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM"]},
+	{ "dtag":"MC13TeV_WJets_LO_600ToInf"                             , "split":400, "xsec":1.0, "dummyxsec":18.77       , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -20,7 +24,7 @@
       "comment":"this seems the one matching better the one from TAU-14-001. Not sure of why pion kaon decays are explicitly mentioned, though",
       "frommcm":"cross section 866600000, filter efficiency 0.00044",
       "data":[        
-            { "dtag":"MC13TeV_QCDMuEnriched", "split":110, "xsec":381304, "br":[ 1.0 ] , "dset":"/QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v3/MINIAODSIM"}
+            { "dtag":"MC13TeV_QCDMuEnriched", "split":110, "xsec":381304, "br":[ 1.0 ] , "dset":["/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM"]}
             ]             
     },          
     {            
@@ -34,7 +38,7 @@
       "othercomment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
       "additionalcomment":"This pythia6 sample is at the moment the best sample for ttbar modeling",
       "data":[
-        { "dtag":"MC13TeV_TTJets_realtaus"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM"}
+        { "dtag":"MC13TeV_TTJets_realtaus"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":["/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/MINIAODSIM", "/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext4-v1/MINIAODSIM" ]} 
       ]
     },
     {            
@@ -47,8 +51,8 @@
       "comment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
       "othercomment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
       "additionalcomment":"This pythia6 sample is at the moment the best sample for ttbar modeling",
-      "data":[
-        { "dtag":"MC13TeV_TTJets_notaus"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM"}
+      "data":
+         { "dtag":"MC13TeV_TTJets_notaus"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":["/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/MINIAODSIM", "/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext4-v1/MINIAODSIM" ]}  
       ]
     },
     { 
@@ -59,10 +63,10 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split":100, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD",       "lumiMask":"data/cert/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
+        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD"],  "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015D-PromptReco-v4/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
       ]                   
     }       
   ]
