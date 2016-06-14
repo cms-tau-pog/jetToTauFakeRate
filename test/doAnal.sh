@@ -32,7 +32,10 @@ if [ "${1}" = "submit" ]; then
     ### rm -r ${OUTDIR}
     # recreate
     mkdir -p ${OUTDIR}
-    
+
+    if [ "${2}" = "data" ]; then
+        JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
+    fi
     runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s ${QUEUE}
     
 elif [ "${1}" = "lumi" ]; then
