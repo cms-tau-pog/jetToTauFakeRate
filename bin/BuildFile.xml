@@ -12,9 +12,10 @@
   <bin name="extractLumiJSON"             file="extractLumiJSON.cc"></bin>
   <bin name="jsonTools"                   file="jsonTools.cc"></bin>
   <bin name="computeLimit"                file="computeLimit.cc"></bin>
-
-<!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
   <bin name="runFixedPlotter"             file="runFixedPlotter.cc"></bin> 
+  <bin name="runPlotter"             file="runPlotter.cc"></bin> 
+<!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
+
 
   <bin name="runTauFakesStudy"            file="runTauFakesStudy.cc"></bin>
   <bin name="runFakeRate"                 file="runFakeRate.cc"></bin>
