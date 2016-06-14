@@ -25,10 +25,10 @@
       "destination":"qcd selection",
       "comment":"real split 13",
       "data":[
-        { "dtag":"Data13TeV_JetHT2015B_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] ,  "dset":["/JetHT/Run2015B-05Oct2015-v1/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_JetHT2015C_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] ,  "dset":["/JetHT/Run2015C_25ns-05Oct2015-v1/MINIAOD"],  "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_JetHT2015D_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] ,  "dset":["/JetHT/Run2015D-05Oct2015-v1/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_JetHT2015D_PromptReco", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/JetHT/Run2015D-PromptReco-v4/MINIAOD"],      "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }     ]
+        { "dtag":"Data13TeV_JetHT2015B_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] ,  "dset":["/JetHT/Run2015B-05Oct2015-v1/MINIAOD"],       "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_JetHT2015C_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] ,  "dset":["/JetHT/Run2015C_25ns-05Oct2015-v1/MINIAOD"],  "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_JetHT2015D_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] ,  "dset":["/JetHT/Run2015D-05Oct2015-v1/MINIAOD"],       "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_JetHT2015D_PromptReco", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/JetHT/Run2015D-PromptReco-v4/MINIAOD"],      "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }     ]
     },
     { 
       "tag":"SingleMu data",
@@ -38,10 +38,10 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD"],  "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015D-PromptReco-v4/MINIAOD"],       "lumiMask":"data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
+        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD"],  "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"],       "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD"],       "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split":200, "xsec":1.0, "br":[ 1.0 ] , "dset":["/SingleMuon/Run2015D-PromptReco-v4/MINIAOD"],       "lumiMask":"${CMSSW_BASE}/src/TauAnalysis/JetToTauFakeRate/data/cert/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
       ]                   
     },
     { 
