@@ -425,12 +425,12 @@ int main (int argc, char *argv[])
   patUtils::MetFilter metFiler;
   if(!isMC)
     {
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/TauAnalysis/JetToTauFakeRate/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/TauAnalysis/JetToTauFakeRate/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/TauAnalysis/JetToTauFakeRate/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/TauAnalysis/JetToTauFakeRate/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/TauAnalysis/JetToTauFakeRate/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/TauAnalysis/JetToTauFakeRate/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
 
         //FIXME, we need to add here the single mu, single el, and gamma path
     }
