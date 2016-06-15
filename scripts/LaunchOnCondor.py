@@ -234,7 +234,7 @@ def CreateCrabConfig(crabWorkDir, crabConfigPath, exePath, cfgPath):
    config_file.write('config.JobType.outputFiles = ["output.root"]\n')
    config_file.write('\n')
    config_file.write('config.section_("Data")\n')
-   config_file.write('config.Data.inputDataset = '+Jobs_CRABDataset+'\n')
+   config_file.write('config.Data.inputDataset = \''+Jobs_CRABDataset+'\'\n')
    config_file.write('config.Data.inputDBS = "%s"\n' % Jobs_CRABInDBS)
    config_file.write('config.Data.splitting = "FileBased"\n')
    config_file.write('config.Data.unitsPerJob = %d\n' % Jobs_CRABUnitPerJob)
