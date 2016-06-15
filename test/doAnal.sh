@@ -172,7 +172,7 @@ elif [ "${1}" = "plot" ]; then
     done
 
 elif [ "${1}" = "crab" ]; then
-    COMMAND = "${2}"
+    COMMAND="${2}"
     # Evolve by fetching the list using for i in ls
     
     for CRABWORKINGDIR in `ls ${OUTDIR}/FARM/inputs/ | grep "crab_"`
