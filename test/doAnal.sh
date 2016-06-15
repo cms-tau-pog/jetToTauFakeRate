@@ -15,6 +15,7 @@ JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/samples.json
 #JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples_all.json#
 
 QUEUE=1nh
+QUEUE=crab
 
 OUTDIR=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/2015fakes/
 #QUEUE=8nm
@@ -170,6 +171,15 @@ elif [ "${1}" = "plot" ]; then
         cp ~/www/HIG-13-026/index.php ${DIR}${CHAN}/
     done
 
+elif [ "${1}" = "crab" ]; then
+    COMMAND = "${2}"
+    # Evolve by fetching the list using for i in ls
+    
+    for CRABWORKINGDIR in `ls ${OUTDIR}/FARM/inputs/ | grep "crab_"`
+    do
+	crab ${COMMAND} -d ${OUTDIR}/FARM/inputs/${CRABWORKINGDIR}
+    done
+    
 elif [ "${1}" = "harvest" ]; then
     # Fix. --plotExt does not really impact (extensions are multiple and hardcoded)
     # Configurable input directory
