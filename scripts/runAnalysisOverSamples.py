@@ -296,7 +296,7 @@ for procBlock in procList :
                    prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s) + filt
                	   sedcmd = 'sed \''
                    sedcmd += 's%"@dtag"%"' + dtag +'"%;'
-                   sedcmd += 's%"@input"%' + eventsFile+'%;'
+                   sedcmd += 's%"@input"%"' + eventsFile+'"%;'
             	   sedcmd += 's%@outfile%' + prodfilepath+'.root%;'
             	   sedcmd += 's%@isMC%' + str(not (isdata or isdatadriven) )+'%;'
             	   sedcmd += 's%@mctruthmode%'+str(mctruthmode)+'%;'
