@@ -38,8 +38,16 @@ if [ "${1}" = "submit" ]; then
         JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/data_samples.json
     elif [ "${2}" = "mc" ]; then
         JSONFILE=$CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/data/mc_samples.json
+    else
+        echo "Keep using the base json, i.e. ${JSONFILE}"
     fi
-    runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s ${QUEUE}
+    
+    LFN=" "
+    if [ "${3}" = "--lfn" ]; then
+	LFN=" --lfn ${4} "
+    fi
+
+    runAnalysisOverSamples.py -e runTauFakesStudy -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/TauAnalysis/JetToTauFakeRate/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${LFN} -s ${QUEUE}
     
 elif [ "${1}" = "lumi" ]; then
     rm qcd_lumi.json
