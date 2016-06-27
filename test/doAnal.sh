@@ -187,6 +187,11 @@ elif [ "${1}" = "crab" ]; then
     do
 	crab ${COMMAND} -d ${OUTDIR}/FARM/inputs/${CRABWORKINGDIR}
     done
+
+elif [ "${1}" = "merge" ]; then
+    mkdir -p ${3}
+    mergeEDMtuples.py --inDir /gstore/t3cms/store/user/vischia/${2}/ --outDir ${3} --json ${JSONFILE} --n 10
+
     
 elif [ "${1}" = "harvest" ]; then
     # Fix. --plotExt does not really impact (extensions are multiple and hardcoded)
