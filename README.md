@@ -3,6 +3,12 @@
 Package for measurement of jet -> tau fake-rate in data and comparison to MC
 
 
+####################################################################################
+Code has been merged into personal analysis package: refer to UserCode/TopAndCharged
+####################################################################################
+
+
+
 Fake rate
 ---------
 
